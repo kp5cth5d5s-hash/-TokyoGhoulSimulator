@@ -2,13 +2,26 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, viewport-fit=cover"
-  >
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0507">
   <title>東京喰種 スマスロシミュレーター</title>
 
   <style>
+    :root {
+      color-scheme: dark;
+      --bg-top: #1b080c;
+      --bg-bottom: #050608;
+      --panel: #17191f;
+      --panel-2: #20232b;
+      --border: #3a3d46;
+      --text: #ffffff;
+      --muted: #a8aab2;
+      --red: #d52b36;
+      --red-dark: #701018;
+      --green: #5fe08a;
+      --yellow: #ffd264;
+    }
+
     * {
       box-sizing: border-box;
     }
@@ -16,21 +29,25 @@
     body {
       margin: 0;
       min-height: 100vh;
-      background: linear-gradient(#16080b, #050608);
-      color: white;
+      background: linear-gradient(var(--bg-top), var(--bg-bottom));
+      color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
     button {
       font: inherit;
       touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
 
     .app {
-      width: min(100%, 520px);
+      width: min(100%, 540px);
       min-height: 100vh;
       margin: auto;
-      padding: 18px 14px 35px;
+      padding:
+        max(18px, env(safe-area-inset-top))
+        14px
+        max(36px, env(safe-area-inset-bottom));
     }
 
     h1 {
@@ -42,7 +59,7 @@
     .version {
       margin: 0 0 14px;
       text-align: center;
-      color: #aaa;
+      color: var(--muted);
       font-size: 13px;
     }
 
@@ -52,37 +69,57 @@
       gap: 8px;
     }
 
-    .status-box {
+    .status-box,
+    .counter-box {
       padding: 10px;
       text-align: center;
-      background: #17191f;
-      border: 1px solid #3a3d46;
+      background: var(--panel);
+      border: 1px solid var(--border);
       border-radius: 12px;
     }
 
-    .status-box small {
+    .status-box small,
+    .counter-box small {
       display: block;
-      color: #aaa;
+      color: var(--muted);
+      font-size: 12px;
     }
 
-    .status-box strong {
+    .status-box strong,
+    .counter-box strong {
       display: block;
       margin-top: 3px;
       font-size: 18px;
     }
 
+    .counters {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .counter-box strong.positive {
+      color: var(--green);
+    }
+
+    .counter-box strong.negative {
+      color: #ff7b83;
+    }
+
     .display {
-      min-height: 78px;
+      min-height: 92px;
       display: grid;
       place-items: center;
       margin: 10px 0;
       padding: 12px;
       text-align: center;
       white-space: pre-line;
+      line-height: 1.45;
       background: linear-gradient(135deg, #351017, #11141a);
       border: 1px solid #7d252e;
       border-radius: 14px;
-      font-weight: bold;
+      font-weight: 700;
     }
 
     .reels {
@@ -109,12 +146,14 @@
       place-items: center;
       border-bottom: 1px solid #bbb;
       font-size: 31px;
+      user-select: none;
     }
 
     .symbol:nth-child(2) {
       height: 78px;
       font-size: 42px;
-      font-weight: bold;
+      font-weight: 800;
+      background: #fff;
     }
 
     .symbol:last-child {
@@ -136,10 +175,10 @@
     .stop-button {
       height: 62px;
       color: white;
-      background: #242730;
+      background: var(--panel-2);
       border: 2px solid #666;
       border-radius: 50%;
-      font-weight: bold;
+      font-weight: 800;
     }
 
     .stop-button:disabled {
@@ -156,36 +195,52 @@
       min-height: 65px;
       margin-top: 14px;
       color: white;
-      background: linear-gradient(#d52b36, #701018);
+      background: linear-gradient(var(--red), var(--red-dark));
       border: 1px solid #ff6971;
       border-radius: 15px;
       font-size: 21px;
-      font-weight: bold;
+      font-weight: 800;
     }
 
     .lever:disabled {
       opacity: 0.4;
     }
 
+    .sub-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .sub-controls button {
+      min-height: 46px;
+      padding: 10px;
+      color: white;
+      background: var(--panel-2);
+      border: 1px solid #555;
+      border-radius: 10px;
+      font-weight: 700;
+    }
+
+    .sub-controls button:active {
+      transform: scale(0.98);
+    }
+
     .info {
-      margin-top: 14px;
+      margin-top: 12px;
       padding: 12px;
-      background: #17191f;
-      border: 1px solid #3a3d46;
+      background: var(--panel);
+      border: 1px solid var(--border);
       border-radius: 12px;
       color: #ccc;
       font-size: 14px;
       line-height: 1.6;
     }
 
-    .reset {
-      width: 100%;
-      margin-top: 10px;
-      padding: 12px;
-      color: white;
-      background: #242730;
-      border: 1px solid #555;
-      border-radius: 10px;
+    .bet-note {
+      color: var(--yellow);
+      font-weight: 700;
     }
   </style>
 </head>
@@ -193,7 +248,7 @@
 <body>
   <main class="app">
     <h1>東京喰種</h1>
-    <p class="version">スマスロシミュレーター Ver.0.2</p>
+    <p class="version">スマスロシミュレーター Ver.0.3</p>
 
     <section class="status">
       <div class="status-box">
@@ -207,11 +262,33 @@
       </div>
     </section>
 
+    <section class="counters">
+      <div class="counter-box">
+        <small>クレジット</small>
+        <strong id="credit">50枚</strong>
+      </div>
+
+      <div class="counter-box">
+        <small>今回の投入</small>
+        <strong id="bet">0枚</strong>
+      </div>
+
+      <div class="counter-box">
+        <small>今回の払い出し</small>
+        <strong id="payout">0枚</strong>
+      </div>
+
+      <div class="counter-box">
+        <small>差枚数</small>
+        <strong id="difference">0枚</strong>
+      </div>
+    </section>
+
     <section class="display" id="message">
       レバーONでスタート
     </section>
 
-    <section class="reels">
+    <section class="reels" aria-label="3リール">
       <div class="reel" id="reel0">
         <div class="symbol"></div>
         <div class="symbol"></div>
@@ -237,19 +314,27 @@
       <button class="stop-button" id="stop2" disabled>右</button>
     </section>
 
-    <button class="lever" id="lever">レバーON</button>
+    <button class="lever" id="lever">レバーON（3枚BET）</button>
 
-    <section class="info">
-      基本操作：左 → 中 → 右の順押し<br>
-      左リールは🐦‍⬛付近を狙う<br>
-      ボタンを押したタイミング＋最大4コマ滑り
+    <section class="sub-controls">
+      <button id="addCredit">クレジット＋50枚</button>
+      <button id="reset">最初からやり直す</button>
     </section>
 
-    <button class="reset" id="reset">最初からやり直す</button>
+    <section class="info">
+      <span class="bet-note">1ゲーム3枚投入</span><br>
+      基本操作：左 → 中 → 右の順押し<br>
+      左リールは🐦‍⬛付近を狙う<br>
+      ボタンを押したタイミング＋最大4コマ滑り<br>
+      ※抽選確率と払い出し枚数は現在テスト用
+    </section>
   </main>
 
   <script>
     "use strict";
+
+    const BET_PER_GAME = 3;
+    const STARTING_CREDIT = 50;
 
     const reelData = [
       [
@@ -273,49 +358,57 @@
     ];
 
     /*
-      抽選確率は仮設定。
+      抽選確率・払い出し枚数はテスト用。
       実機情報に合わせて後から変更する。
     */
     const roleTable = [
       {
         name: "ベル",
         weight: 42,
-        target: ["🔔", "🔔", "🔔"]
+        target: ["🔔", "🔔", "🔔"],
+        payout: 9
       },
       {
         name: "リプレイ",
         weight: 28,
-        target: ["🟦", "🟦", "🟦"]
+        target: ["🟦", "🟦", "🟦"],
+        payout: 3
       },
       {
         name: "チェリー",
         weight: 12,
-        target: ["🍒", null, null]
+        target: ["🍒", null, null],
+        payout: 2
       },
       {
         name: "スイカ",
         weight: 8,
-        target: ["🍉", "🍉", "🍉"]
+        target: ["🍉", "🍉", "🍉"],
+        payout: 4
       },
       {
         name: "赫図柄",
         weight: 4,
-        target: ["🟥", "🟥", "🟥"]
+        target: ["🟥", "🟥", "🟥"],
+        payout: 15
       },
       {
         name: "喰図柄",
         weight: 1,
-        target: ["🌸", "🌸", "🌸"]
+        target: ["🌸", "🌸", "🌸"],
+        payout: 15
       },
       {
         name: "白7",
         weight: 0.2,
-        target: ["7️⃣", "7️⃣", "7️⃣"]
+        target: ["7️⃣", "7️⃣", "7️⃣"],
+        payout: 15
       },
       {
         name: "ハズレ",
         weight: 4.8,
-        target: [null, null, null]
+        target: [null, null, null],
+        payout: 0
       }
     ];
 
@@ -327,6 +420,10 @@
     const statusText = document.getElementById("status");
     const gamesText = document.getElementById("games");
     const message = document.getElementById("message");
+    const creditText = document.getElementById("credit");
+    const betText = document.getElementById("bet");
+    const payoutText = document.getElementById("payout");
+    const differenceText = document.getElementById("difference");
 
     const stopButtons = [
       document.getElementById("stop0"),
@@ -336,6 +433,11 @@
 
     let games = 0;
     let playing = false;
+    let credit = STARTING_CREDIT;
+    let totalIn = 0;
+    let totalOut = 0;
+    let currentBet = 0;
+    let lastPayout = 0;
     let currentRole = roleTable[roleTable.length - 1];
 
     function wrap(number, length) {
@@ -351,22 +453,40 @@
       symbols[0].textContent =
         data[wrap(position - 1, data.length)];
 
-      symbols[1].textContent =
-        data[position];
+      symbols[1].textContent = data[position];
 
       symbols[2].textContent =
         data[wrap(position + 1, data.length)];
 
-      reel.classList.toggle(
-        "spinning",
-        !stopped[index]
-      );
+      reel.classList.toggle("spinning", !stopped[index]);
     }
 
     function drawAll() {
       drawReel(0);
       drawReel(1);
       drawReel(2);
+    }
+
+    function updateCounters() {
+      const difference = totalOut - totalIn;
+
+      creditText.textContent = credit + "枚";
+      betText.textContent = currentBet + "枚";
+      payoutText.textContent = lastPayout + "枚";
+      differenceText.textContent =
+        (difference > 0 ? "+" : "") + difference + "枚";
+
+      differenceText.classList.toggle(
+        "positive",
+        difference > 0
+      );
+
+      differenceText.classList.toggle(
+        "negative",
+        difference < 0
+      );
+
+      lever.disabled = playing || credit < BET_PER_GAME;
     }
 
     function selectRole() {
@@ -419,19 +539,31 @@
         return;
       }
 
+      if (credit < BET_PER_GAME) {
+        message.textContent =
+          "クレジット不足です\n＋50枚を押してください";
+        updateCounters();
+        return;
+      }
+
       playing = true;
       games++;
       currentRole = selectRole();
+      currentBet = BET_PER_GAME;
+      lastPayout = 0;
+
+      credit -= BET_PER_GAME;
+      totalIn += BET_PER_GAME;
 
       gamesText.textContent = games + "G";
       statusText.textContent = "回転中";
       message.textContent = "左リールから停止";
 
-      lever.disabled = true;
-
       stopButtons[0].disabled = false;
       stopButtons[1].disabled = true;
       stopButtons[2].disabled = true;
+
+      updateCounters();
 
       reelData.forEach((data, index) => {
         stopped[index] = false;
@@ -458,10 +590,6 @@
 
       let targetSymbol = currentRole.target[index];
 
-      /*
-        ハズレ時の左リールは、
-        押した場所から4コマ以内に🐦‍⬛があれば停止。
-      */
       if (
         index === 0 &&
         currentRole.name === "ハズレ"
@@ -469,10 +597,6 @@
         targetSymbol = "🐦‍⬛";
       }
 
-      /*
-        通常役は最大4コマ滑り。
-        特殊図柄だけ表示確認用に最大19コマ。
-      */
       const specialRole =
         currentRole.name === "喰図柄" ||
         currentRole.name === "白7";
@@ -526,12 +650,16 @@
     }
 
     function finishGame() {
-      playing = false;
-      lever.disabled = false;
-      statusText.textContent = "停止";
-
       const line = getMiddleLine();
       const success = roleWasDisplayed(line);
+
+      lastPayout = success ? currentRole.payout : 0;
+      credit += lastPayout;
+      totalOut += lastPayout;
+
+      playing = false;
+      currentBet = 0;
+      statusText.textContent = "停止";
 
       if (
         currentRole.name !== "ハズレ" &&
@@ -540,15 +668,29 @@
         message.textContent =
           "成立役：" +
           currentRole.name +
-          "（取りこぼし）\n" +
+          "（取りこぼし）\n払い出し：0枚\n" +
           line.join(" ｜ ");
       } else {
         message.textContent =
           "成立役：" +
           currentRole.name +
-          "\n" +
+          "\n払い出し：" +
+          lastPayout +
+          "枚\n" +
           line.join(" ｜ ");
       }
+
+      updateCounters();
+    }
+
+    function addCredit() {
+      if (playing) {
+        return;
+      }
+
+      credit += 50;
+      message.textContent = "クレジットを50枚補充しました";
+      updateCounters();
     }
 
     function resetGame() {
@@ -568,18 +710,22 @@
 
       games = 0;
       playing = false;
+      credit = STARTING_CREDIT;
+      totalIn = 0;
+      totalOut = 0;
+      currentBet = 0;
+      lastPayout = 0;
 
       gamesText.textContent = "0G";
       statusText.textContent = "待機中";
       message.textContent = "レバーONでスタート";
-
-      lever.disabled = false;
 
       stopButtons.forEach(button => {
         button.disabled = true;
       });
 
       drawAll();
+      updateCounters();
     }
 
     lever.addEventListener("click", startGame);
@@ -597,10 +743,15 @@
     });
 
     document
+      .getElementById("addCredit")
+      .addEventListener("click", addCredit);
+
+    document
       .getElementById("reset")
       .addEventListener("click", resetGame);
 
     drawAll();
+    updateCounters();
   </script>
 </body>
 </html>
