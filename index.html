@@ -20,6 +20,7 @@
       --red-dark: #701018;
       --green: #5fe08a;
       --yellow: #ffd264;
+      --blue: #67a7ff;
     }
 
     * {
@@ -41,7 +42,7 @@
     }
 
     .app {
-      width: min(100%, 540px);
+      width: min(100%, 560px);
       min-height: 100vh;
       margin: auto;
       padding:
@@ -63,14 +64,22 @@
       font-size: 13px;
     }
 
-    .status {
+    .status,
+    .counters,
+    .normal-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(2, 1fr);
       gap: 8px;
     }
 
+    .counters,
+    .normal-panel {
+      margin-top: 8px;
+    }
+
     .status-box,
-    .counter-box {
+    .counter-box,
+    .normal-box {
       padding: 10px;
       text-align: center;
       background: var(--panel);
@@ -79,24 +88,19 @@
     }
 
     .status-box small,
-    .counter-box small {
+    .counter-box small,
+    .normal-box small {
       display: block;
       color: var(--muted);
       font-size: 12px;
     }
 
     .status-box strong,
-    .counter-box strong {
+    .counter-box strong,
+    .normal-box strong {
       display: block;
       margin-top: 3px;
       font-size: 18px;
-    }
-
-    .counters {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
-      margin-top: 8px;
     }
 
     .counter-box strong.positive {
@@ -107,8 +111,59 @@
       color: #ff7b83;
     }
 
+    .normal-panel {
+      padding: 10px;
+      background: rgba(23, 25, 31, 0.92);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+    }
+
+    .normal-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-weight: 800;
+    }
+
+    .mode-badge {
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: #30333b;
+      border: 1px solid #555;
+      font-size: 13px;
+    }
+
+    .point-row {
+      margin-top: 9px;
+    }
+
+    .point-label {
+      display: flex;
+      justify-content: space-between;
+      color: #ddd;
+      font-size: 13px;
+      margin-bottom: 5px;
+    }
+
+    .point-track {
+      height: 12px;
+      overflow: hidden;
+      background: #090a0d;
+      border: 1px solid #454952;
+      border-radius: 999px;
+    }
+
+    .point-bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #5d1c2c, #e93a50, #ffd264);
+      transition: width 0.25s ease;
+    }
+
     .display {
-      min-height: 92px;
+      min-height: 104px;
       display: grid;
       place-items: center;
       margin: 10px 0;
@@ -248,12 +303,12 @@
 <body>
   <main class="app">
     <h1>東京喰種</h1>
-    <p class="version">スマスロシミュレーター Ver.0.3</p>
+    <p class="version">スマスロシミュレーター Ver.0.4</p>
 
     <section class="status">
       <div class="status-box">
         <small>状態</small>
-        <strong id="status">待機中</strong>
+        <strong id="status">通常時</strong>
       </div>
 
       <div class="status-box">
@@ -281,6 +336,45 @@
       <div class="counter-box">
         <small>差枚数</small>
         <strong id="difference">0枚</strong>
+      </div>
+    </section>
+
+    <section class="normal-panel">
+      <div class="normal-title">
+        <span>通常時システム</span>
+        <span class="mode-badge" id="modeBadge">通常A</span>
+      </div>
+
+      <div class="normal-grid">
+        <div class="normal-box">
+          <small>CZポイント</small>
+          <strong id="czPoints">0pt</strong>
+        </div>
+
+        <div class="normal-box">
+          <small>CZ回数</small>
+          <strong id="czCount">0回</strong>
+        </div>
+
+        <div class="normal-box">
+          <small>CZ情報</small>
+          <strong id="czInfo">--</strong>
+        </div>
+
+        <div class="normal-box">
+          <small>モード滞在</small>
+          <strong id="modeGames">0G</strong>
+        </div>
+      </div>
+
+      <div class="point-row">
+        <div class="point-label">
+          <span>100ptでCZ確定</span>
+          <span id="pointPercent">0%</span>
+        </div>
+        <div class="point-track">
+          <div class="point-bar" id="pointBar"></div>
+        </div>
       </div>
     </section>
 
@@ -322,11 +416,11 @@
     </section>
 
     <section class="info">
-      <span class="bet-note">1ゲーム3枚投入</span><br>
-      基本操作：左 → 中 → 右の順押し<br>
-      左リールは🐦‍⬛付近を狙う<br>
-      ボタンを押したタイミング＋最大4コマ滑り<br>
-      ※抽選確率と払い出し枚数は現在テスト用
+      <span class="bet-note">Ver.0.4：通常モード・CZポイント・CZ抽選を追加</span><br>
+      レア役でCZポイントを獲得<br>
+      100pt到達、またはレア役の直撃抽選でCZへ<br>
+      CZは8G、100pt到達で成功<br>
+      ※モード名・抽選値・払い出しは現在テスト用
     </section>
   </main>
 
@@ -335,6 +429,8 @@
 
     const BET_PER_GAME = 3;
     const STARTING_CREDIT = 50;
+    const CZ_TARGET_POINTS = 100;
+    const CZ_LENGTH = 8;
 
     const reelData = [
       [
@@ -357,58 +453,105 @@
       ]
     ];
 
-    /*
-      抽選確率・払い出し枚数はテスト用。
-      実機情報に合わせて後から変更する。
-    */
     const roleTable = [
       {
         name: "ベル",
         weight: 42,
         target: ["🔔", "🔔", "🔔"],
-        payout: 9
+        payout: 9,
+        normalPoints: [0, 2],
+        directCzChance: 0,
+        czPower: 6
       },
       {
         name: "リプレイ",
         weight: 28,
         target: ["🟦", "🟦", "🟦"],
-        payout: 3
+        payout: 3,
+        normalPoints: [0, 1],
+        directCzChance: 0,
+        czPower: 4
       },
       {
         name: "チェリー",
         weight: 12,
         target: ["🍒", null, null],
-        payout: 2
+        payout: 2,
+        normalPoints: [10, 20],
+        directCzChance: 0.05,
+        czPower: 22
       },
       {
         name: "スイカ",
         weight: 8,
         target: ["🍉", "🍉", "🍉"],
-        payout: 4
+        payout: 4,
+        normalPoints: [15, 30],
+        directCzChance: 0.1,
+        czPower: 28
       },
       {
         name: "赫図柄",
         weight: 4,
         target: ["🟥", "🟥", "🟥"],
-        payout: 15
+        payout: 15,
+        normalPoints: [30, 50],
+        directCzChance: 0.25,
+        czPower: 45
       },
       {
         name: "喰図柄",
         weight: 1,
         target: ["🌸", "🌸", "🌸"],
-        payout: 15
+        payout: 15,
+        normalPoints: [100, 100],
+        directCzChance: 1,
+        czPower: 100
       },
       {
         name: "白7",
         weight: 0.2,
         target: ["7️⃣", "7️⃣", "7️⃣"],
-        payout: 15
+        payout: 15,
+        normalPoints: [100, 100],
+        directCzChance: 1,
+        czPower: 100
       },
       {
         name: "ハズレ",
         weight: 4.8,
         target: [null, null, null],
-        payout: 0
+        payout: 0,
+        normalPoints: [0, 0],
+        directCzChance: 0,
+        czPower: 0
+      }
+    ];
+
+    const modes = [
+      {
+        name: "通常A",
+        pointMultiplier: 1,
+        directMultiplier: 1,
+        color: "#81858f"
+      },
+      {
+        name: "通常B",
+        pointMultiplier: 1.15,
+        directMultiplier: 1.2,
+        color: "#67a7ff"
+      },
+      {
+        name: "チャンス",
+        pointMultiplier: 1.35,
+        directMultiplier: 1.6,
+        color: "#ffd264"
+      },
+      {
+        name: "高確",
+        pointMultiplier: 1.6,
+        directMultiplier: 2.2,
+        color: "#ff6b7b"
       }
     ];
 
@@ -424,6 +567,13 @@
     const betText = document.getElementById("bet");
     const payoutText = document.getElementById("payout");
     const differenceText = document.getElementById("difference");
+    const modeBadge = document.getElementById("modeBadge");
+    const czPointsText = document.getElementById("czPoints");
+    const czCountText = document.getElementById("czCount");
+    const czInfoText = document.getElementById("czInfo");
+    const modeGamesText = document.getElementById("modeGames");
+    const pointPercentText = document.getElementById("pointPercent");
+    const pointBar = document.getElementById("pointBar");
 
     const stopButtons = [
       document.getElementById("stop0"),
@@ -440,8 +590,23 @@
     let lastPayout = 0;
     let currentRole = roleTable[roleTable.length - 1];
 
+    let gameState = "normal";
+    let pendingCz = false;
+    let currentModeIndex = 0;
+    let modeGames = 0;
+    let czPoints = 0;
+    let czCount = 0;
+    let czGamesLeft = 0;
+    let czBattlePoints = 0;
+
     function wrap(number, length) {
       return ((number % length) + length) % length;
+    }
+
+    function randomInteger(minimum, maximum) {
+      return Math.floor(
+        Math.random() * (maximum - minimum + 1)
+      ) + minimum;
     }
 
     function drawReel(index) {
@@ -489,6 +654,36 @@
       lever.disabled = playing || credit < BET_PER_GAME;
     }
 
+    function updateNormalDisplay() {
+      const mode = modes[currentModeIndex];
+      const displayedPoints = Math.min(czPoints, CZ_TARGET_POINTS);
+      const percent = Math.floor(
+        displayedPoints / CZ_TARGET_POINTS * 100
+      );
+
+      modeBadge.textContent = mode.name;
+      modeBadge.style.color = mode.color;
+      modeBadge.style.borderColor = mode.color;
+
+      czPointsText.textContent = displayedPoints + "pt";
+      czCountText.textContent = czCount + "回";
+      modeGamesText.textContent = modeGames + "G";
+      pointPercentText.textContent = percent + "%";
+      pointBar.style.width = percent + "%";
+
+      if (gameState === "cz") {
+        czInfoText.textContent =
+          "残" + czGamesLeft + "G / " + czBattlePoints + "pt";
+        statusText.textContent = "CZ中";
+      } else if (pendingCz) {
+        czInfoText.textContent = "次G突入";
+        statusText.textContent = "CZ前兆";
+      } else {
+        czInfoText.textContent = "--";
+        statusText.textContent = playing ? "回転中" : "通常時";
+      }
+    }
+
     function selectRole() {
       const totalWeight = roleTable.reduce(
         (total, role) => total + role.weight,
@@ -506,6 +701,39 @@
       }
 
       return roleTable[roleTable.length - 1];
+    }
+
+    function selectModeIndex() {
+      const roll = Math.random();
+
+      if (roll < 0.48) return 0;
+      if (roll < 0.78) return 1;
+      if (roll < 0.95) return 2;
+      return 3;
+    }
+
+    function maybeChangeMode(role) {
+      let changeChance = 0.045;
+
+      if (role.name === "チェリー") changeChance += 0.08;
+      if (role.name === "スイカ") changeChance += 0.12;
+      if (role.name === "赫図柄") changeChance += 0.22;
+
+      if (modeGames >= 50) {
+        changeChance += 0.25;
+      }
+
+      if (Math.random() < changeChance) {
+        const oldMode = currentModeIndex;
+        currentModeIndex = selectModeIndex();
+        modeGames = 0;
+
+        if (currentModeIndex !== oldMode) {
+          return "モード移行：" + modes[currentModeIndex].name;
+        }
+      }
+
+      return "";
     }
 
     function findTargetPosition(
@@ -534,6 +762,16 @@
       return startPosition;
     }
 
+    function beginCz() {
+      gameState = "cz";
+      pendingCz = false;
+      czGamesLeft = CZ_LENGTH;
+      czBattlePoints = 0;
+      czPoints = 0;
+      czCount++;
+      updateNormalDisplay();
+    }
+
     function startGame() {
       if (playing) {
         return;
@@ -546,6 +784,10 @@
         return;
       }
 
+      if (pendingCz) {
+        beginCz();
+      }
+
       playing = true;
       games++;
       currentRole = selectRole();
@@ -555,15 +797,22 @@
       credit -= BET_PER_GAME;
       totalIn += BET_PER_GAME;
 
+      if (gameState === "normal") {
+        modeGames++;
+      }
+
       gamesText.textContent = games + "G";
-      statusText.textContent = "回転中";
-      message.textContent = "左リールから停止";
+      message.textContent =
+        gameState === "cz"
+          ? "CZ中：左リールから停止"
+          : "左リールから停止";
 
       stopButtons[0].disabled = false;
       stopButtons[1].disabled = true;
       stopButtons[2].disabled = true;
 
       updateCounters();
+      updateNormalDisplay();
 
       reelData.forEach((data, index) => {
         stopped[index] = false;
@@ -649,6 +898,86 @@
       });
     }
 
+    function processNormalGame(success) {
+      if (!success) {
+        return "CZポイント：取りこぼしで獲得なし";
+      }
+
+      const mode = modes[currentModeIndex];
+      const basePoints = randomInteger(
+        currentRole.normalPoints[0],
+        currentRole.normalPoints[1]
+      );
+      const gainedPoints = Math.round(
+        basePoints * mode.pointMultiplier
+      );
+
+      czPoints = Math.min(
+        CZ_TARGET_POINTS,
+        czPoints + gainedPoints
+      );
+
+      const directChance = Math.min(
+        1,
+        currentRole.directCzChance * mode.directMultiplier
+      );
+
+      const directHit = Math.random() < directChance;
+      const pointHit = czPoints >= CZ_TARGET_POINTS;
+
+      let result = "CZポイント：+" + gainedPoints + "pt";
+
+      if (directHit || pointHit) {
+        pendingCz = true;
+        result += directHit
+          ? "\nレア役直撃でCZ当選！"
+          : "\n100pt到達でCZ当選！";
+      } else {
+        const modeMessage = maybeChangeMode(currentRole);
+
+        if (modeMessage) {
+          result += "\n" + modeMessage;
+        }
+      }
+
+      return result;
+    }
+
+    function processCzGame(success) {
+      const gained = success ? currentRole.czPower : 0;
+      czBattlePoints = Math.min(
+        CZ_TARGET_POINTS,
+        czBattlePoints + gained
+      );
+      czGamesLeft--;
+
+      let result = "CZ獲得：+" + gained + "pt";
+
+      if (czBattlePoints >= CZ_TARGET_POINTS) {
+        result += "\nCZ成功！AT当選（AT処理は次版）";
+        gameState = "normal";
+        czGamesLeft = 0;
+        czBattlePoints = 0;
+        currentModeIndex = selectModeIndex();
+        modeGames = 0;
+        return result;
+      }
+
+      if (czGamesLeft <= 0) {
+        result += "\nCZ失敗…通常時へ";
+        gameState = "normal";
+        czBattlePoints = 0;
+        currentModeIndex = selectModeIndex();
+        modeGames = 0;
+      } else {
+        result +=
+          "\n残り" + czGamesLeft + "G / " +
+          czBattlePoints + "pt";
+      }
+
+      return result;
+    }
+
     function finishGame() {
       const line = getMiddleLine();
       const success = roleWasDisplayed(line);
@@ -657,8 +986,12 @@
       credit += lastPayout;
       totalOut += lastPayout;
 
+      const systemMessage =
+        gameState === "cz"
+          ? processCzGame(success)
+          : processNormalGame(success);
+
       playing = false;
-      currentBet = 0;
       statusText.textContent = "停止";
 
       if (
@@ -669,6 +1002,7 @@
           "成立役：" +
           currentRole.name +
           "（取りこぼし）\n払い出し：0枚\n" +
+          systemMessage + "\n" +
           line.join(" ｜ ");
       } else {
         message.textContent =
@@ -677,10 +1011,12 @@
           "\n払い出し：" +
           lastPayout +
           "枚\n" +
+          systemMessage + "\n" +
           line.join(" ｜ ");
       }
 
       updateCounters();
+      updateNormalDisplay();
     }
 
     function addCredit() {
@@ -716,8 +1052,16 @@
       currentBet = 0;
       lastPayout = 0;
 
+      gameState = "normal";
+      pendingCz = false;
+      currentModeIndex = 0;
+      modeGames = 0;
+      czPoints = 0;
+      czCount = 0;
+      czGamesLeft = 0;
+      czBattlePoints = 0;
+
       gamesText.textContent = "0G";
-      statusText.textContent = "待機中";
       message.textContent = "レバーONでスタート";
 
       stopButtons.forEach(button => {
@@ -726,6 +1070,7 @@
 
       drawAll();
       updateCounters();
+      updateNormalDisplay();
     }
 
     lever.addEventListener("click", startGame);
@@ -752,6 +1097,7 @@
 
     drawAll();
     updateCounters();
+    updateNormalDisplay();
   </script>
 </body>
 </html>
