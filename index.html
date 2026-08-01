@@ -2,7 +2,10 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  >
   <title>東京喰種 スマスロシミュレーター</title>
 
   <style>
@@ -37,7 +40,7 @@
     }
 
     .version {
-      margin: 0 0 16px;
+      margin: 0 0 14px;
       text-align: center;
       color: #aaa;
       font-size: 13px;
@@ -69,12 +72,13 @@
     }
 
     .display {
-      min-height: 72px;
+      min-height: 78px;
       display: grid;
       place-items: center;
       margin: 10px 0;
       padding: 12px;
       text-align: center;
+      white-space: pre-line;
       background: linear-gradient(135deg, #351017, #11141a);
       border: 1px solid #7d252e;
       border-radius: 14px;
@@ -109,7 +113,6 @@
 
     .symbol:nth-child(2) {
       height: 78px;
-      background: #fff;
       font-size: 42px;
       font-weight: bold;
     }
@@ -119,7 +122,7 @@
     }
 
     .reel.spinning {
-      opacity: 0.65;
+      opacity: 0.6;
       filter: blur(1px);
     }
 
@@ -172,6 +175,7 @@
       border-radius: 12px;
       color: #ccc;
       font-size: 14px;
+      line-height: 1.6;
     }
 
     .reset {
@@ -189,7 +193,7 @@
 <body>
   <main class="app">
     <h1>東京喰種</h1>
-    <p class="version">スマスロシミュレーター Ver.0.1</p>
+    <p class="version">スマスロシミュレーター Ver.0.2</p>
 
     <section class="status">
       <div class="status-box">
@@ -209,21 +213,21 @@
 
     <section class="reels">
       <div class="reel" id="reel0">
-        <div class="symbol">🍉</div>
-        <div class="symbol">🐦‍⬛</div>
-        <div class="symbol">🔔</div>
+        <div class="symbol"></div>
+        <div class="symbol"></div>
+        <div class="symbol"></div>
       </div>
 
       <div class="reel" id="reel1">
-        <div class="symbol">🔔</div>
-        <div class="symbol">🟦</div>
-        <div class="symbol">🍉</div>
+        <div class="symbol"></div>
+        <div class="symbol"></div>
+        <div class="symbol"></div>
       </div>
 
       <div class="reel" id="reel2">
-        <div class="symbol">🟦</div>
-        <div class="symbol">🔔</div>
-        <div class="symbol">🌸</div>
+        <div class="symbol"></div>
+        <div class="symbol"></div>
+        <div class="symbol"></div>
       </div>
     </section>
 
@@ -237,20 +241,85 @@
 
     <section class="info">
       基本操作：左 → 中 → 右の順押し<br>
-      左リールは🐦‍⬛狙い
+      左リールは🐦‍⬛付近を狙う<br>
+      ボタンを押したタイミング＋最大4コマ滑り
     </section>
 
     <button class="reset" id="reset">最初からやり直す</button>
   </main>
 
   <script>
+    "use strict";
+
     const reelData = [
-      ["🍉","🍒","🤍","🟦","🔔","🍉","🟥","🌸","🟦","🔔","🍉","🍒","🐦‍⬛","🟦","🔔","🍉","🍒","7️⃣","🟦","🔔"],
-      ["🟥","🟦","🤍","🍒","🔔","🟥","🟦","🌸","🍉","🔔","🟥","🟦","🐦‍⬛","🍉","🔔","🟥","🟦","7️⃣","🍒","🔔"],
-      ["🔔","🟦","🤍","🟥","🍉","🔔","🟦","🌸","🟥","🍉","🔔","🟦","🐦‍⬛","🟥","🍉","🔔","🟦","7️⃣","🟥","🍉"]
+      [
+        "🍉","🍒","⬜","🟦","🔔",
+        "🍉","🟥","🌸","🟦","🔔",
+        "🍉","🍒","🐦‍⬛","🟦","🔔",
+        "🍉","🍒","7️⃣","🟦","🔔"
+      ],
+      [
+        "🟥","🟦","⬜","🍒","🔔",
+        "🟥","🟦","🌸","🍉","🔔",
+        "🟥","🟦","🐦‍⬛","🍉","🔔",
+        "🟥","🟦","7️⃣","🍒","🔔"
+      ],
+      [
+        "🔔","🟦","⬜","🟥","🍉",
+        "🔔","🟦","🌸","🟥","🍉",
+        "🔔","🟦","🐦‍⬛","🟥","🍉",
+        "🔔","🟦","7️⃣","🟥","🍉"
+      ]
     ];
 
-    const positions = [12, 0, 0];
+    /*
+      抽選確率は仮設定。
+      実機情報に合わせて後から変更する。
+    */
+    const roleTable = [
+      {
+        name: "ベル",
+        weight: 42,
+        target: ["🔔", "🔔", "🔔"]
+      },
+      {
+        name: "リプレイ",
+        weight: 28,
+        target: ["🟦", "🟦", "🟦"]
+      },
+      {
+        name: "チェリー",
+        weight: 12,
+        target: ["🍒", null, null]
+      },
+      {
+        name: "スイカ",
+        weight: 8,
+        target: ["🍉", "🍉", "🍉"]
+      },
+      {
+        name: "赫図柄",
+        weight: 4,
+        target: ["🟥", "🟥", "🟥"]
+      },
+      {
+        name: "喰図柄",
+        weight: 1,
+        target: ["🌸", "🌸", "🌸"]
+      },
+      {
+        name: "白7",
+        weight: 0.2,
+        target: ["7️⃣", "7️⃣", "7️⃣"]
+      },
+      {
+        name: "ハズレ",
+        weight: 4.8,
+        target: [null, null, null]
+      }
+    ];
+
+    const positions = [12, 12, 12];
     const timers = [null, null, null];
     const stopped = [true, true, true];
 
@@ -258,6 +327,7 @@
     const statusText = document.getElementById("status");
     const gamesText = document.getElementById("games");
     const message = document.getElementById("message");
+
     const stopButtons = [
       document.getElementById("stop0"),
       document.getElementById("stop1"),
@@ -266,9 +336,10 @@
 
     let games = 0;
     let playing = false;
+    let currentRole = roleTable[roleTable.length - 1];
 
     function wrap(number, length) {
-      return (number + length) % length;
+      return ((number % length) + length) % length;
     }
 
     function drawReel(index) {
@@ -277,11 +348,19 @@
       const data = reelData[index];
       const position = positions[index];
 
-      symbols[0].textContent = data[wrap(position - 1, data.length)];
-      symbols[1].textContent = data[position];
-      symbols[2].textContent = data[wrap(position + 1, data.length)];
+      symbols[0].textContent =
+        data[wrap(position - 1, data.length)];
 
-      reel.classList.toggle("spinning", !stopped[index]);
+      symbols[1].textContent =
+        data[position];
+
+      symbols[2].textContent =
+        data[wrap(position + 1, data.length)];
+
+      reel.classList.toggle(
+        "spinning",
+        !stopped[index]
+      );
     }
 
     function drawAll() {
@@ -290,16 +369,66 @@
       drawReel(2);
     }
 
+    function selectRole() {
+      const totalWeight = roleTable.reduce(
+        (total, role) => total + role.weight,
+        0
+      );
+
+      let random = Math.random() * totalWeight;
+
+      for (const role of roleTable) {
+        random -= role.weight;
+
+        if (random < 0) {
+          return role;
+        }
+      }
+
+      return roleTable[roleTable.length - 1];
+    }
+
+    function findTargetPosition(
+      reelIndex,
+      targetSymbol,
+      maximumSlip
+    ) {
+      const data = reelData[reelIndex];
+      const startPosition = positions[reelIndex];
+
+      if (targetSymbol === null) {
+        return startPosition;
+      }
+
+      for (let slip = 0; slip <= maximumSlip; slip++) {
+        const checkPosition = wrap(
+          startPosition + slip,
+          data.length
+        );
+
+        if (data[checkPosition] === targetSymbol) {
+          return checkPosition;
+        }
+      }
+
+      return startPosition;
+    }
+
     function startGame() {
-      if (playing) return;
+      if (playing) {
+        return;
+      }
 
       playing = true;
       games++;
+      currentRole = selectRole();
+
       gamesText.textContent = games + "G";
       statusText.textContent = "回転中";
       message.textContent = "左リールから停止";
 
       lever.disabled = true;
+
       stopButtons[0].disabled = false;
       stopButtons[1].disabled = true;
       stopButtons[2].disabled = true;
@@ -308,22 +437,53 @@
         stopped[index] = false;
 
         timers[index] = setInterval(() => {
-          positions[index] = wrap(positions[index] + 1, data.length);
+          positions[index] = wrap(
+            positions[index] + 1,
+            data.length
+          );
+
           drawReel(index);
-        }, 60 + index * 8);
+        }, 55 + index * 7);
       });
     }
 
     function stopReel(index) {
-      if (stopped[index]) return;
+      if (stopped[index]) {
+        return;
+      }
 
       clearInterval(timers[index]);
       timers[index] = null;
       stopped[index] = true;
 
-      if (index === 0) {
-        positions[0] = reelData[0].indexOf("🐦‍⬛");
+      let targetSymbol = currentRole.target[index];
+
+      /*
+        ハズレ時の左リールは、
+        押した場所から4コマ以内に🐦‍⬛があれば停止。
+      */
+      if (
+        index === 0 &&
+        currentRole.name === "ハズレ"
+      ) {
+        targetSymbol = "🐦‍⬛";
       }
+
+      /*
+        通常役は最大4コマ滑り。
+        特殊図柄だけ表示確認用に最大19コマ。
+      */
+      const specialRole =
+        currentRole.name === "喰図柄" ||
+        currentRole.name === "白7";
+
+      const maximumSlip = specialRole ? 19 : 4;
+
+      positions[index] = findTargetPosition(
+        index,
+        targetSymbol,
+        maximumSlip
+      );
 
       drawReel(index);
       stopButtons[index].disabled = true;
@@ -331,12 +491,38 @@
       if (index === 0) {
         stopButtons[1].disabled = false;
         message.textContent = "次は中リール";
-      } else if (index === 1) {
+        return;
+      }
+
+      if (index === 1) {
         stopButtons[2].disabled = false;
         message.textContent = "最後に右リール";
-      } else {
-        finishGame();
+        return;
       }
+
+      finishGame();
+    }
+
+    function getMiddleLine() {
+      return positions.map((position, index) => {
+        return reelData[index][position];
+      });
+    }
+
+    function roleWasDisplayed(line) {
+      if (currentRole.name === "ハズレ") {
+        return true;
+      }
+
+      if (currentRole.name === "チェリー") {
+        return line[0] === "🍒";
+      }
+
+      const targetSymbol = currentRole.target[0];
+
+      return line.every(symbol => {
+        return symbol === targetSymbol;
+      });
     }
 
     function finishGame() {
@@ -344,29 +530,37 @@
       lever.disabled = false;
       statusText.textContent = "停止";
 
-      const line = positions.map((position, index) => {
-        return reelData[index][position];
-      });
+      const line = getMiddleLine();
+      const success = roleWasDisplayed(line);
 
-      if (line.every(symbol => symbol === "🌸")) {
-        message.textContent = "🌸 喰図柄揃い！";
-      } else if (line.every(symbol => symbol === "7️⃣")) {
-        message.textContent = "白7揃い！";
-      } else if (line.every(symbol => symbol === "🐦‍⬛")) {
-        message.textContent = "🐦‍⬛ 黒BAR揃い！";
+      if (
+        currentRole.name !== "ハズレ" &&
+        !success
+      ) {
+        message.textContent =
+          "成立役：" +
+          currentRole.name +
+          "（取りこぼし）\n" +
+          line.join(" ｜ ");
       } else {
-        message.textContent = line.join(" ｜ ");
+        message.textContent =
+          "成立役：" +
+          currentRole.name +
+          "\n" +
+          line.join(" ｜ ");
       }
     }
 
     function resetGame() {
       timers.forEach(timer => {
-        if (timer !== null) clearInterval(timer);
+        if (timer !== null) {
+          clearInterval(timer);
+        }
       });
 
       positions[0] = 12;
-      positions[1] = 0;
-      positions[2] = 0;
+      positions[1] = 12;
+      positions[2] = 12;
 
       stopped[0] = true;
       stopped[1] = true;
@@ -378,6 +572,7 @@
       gamesText.textContent = "0G";
       statusText.textContent = "待機中";
       message.textContent = "レバーONでスタート";
+
       lever.disabled = false;
 
       stopButtons.forEach(button => {
@@ -388,10 +583,22 @@
     }
 
     lever.addEventListener("click", startGame);
-    stopButtons[0].addEventListener("click", () => stopReel(0));
-    stopButtons[1].addEventListener("click", () => stopReel(1));
-    stopButtons[2].addEventListener("click", () => stopReel(2));
-    document.getElementById("reset").addEventListener("click", resetGame);
+
+    stopButtons[0].addEventListener("click", () => {
+      stopReel(0);
+    });
+
+    stopButtons[1].addEventListener("click", () => {
+      stopReel(1);
+    });
+
+    stopButtons[2].addEventListener("click", () => {
+      stopReel(2);
+    });
+
+    document
+      .getElementById("reset")
+      .addEventListener("click", resetGame);
 
     drawAll();
   </script>
