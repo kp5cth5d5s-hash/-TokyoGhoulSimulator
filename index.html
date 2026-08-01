@@ -1,0 +1,399 @@
+:<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>東京喰種 スマスロシミュレーター</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(#16080b, #050608);
+      color: white;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button {
+      font: inherit;
+      touch-action: manipulation;
+    }
+
+    .app {
+      width: min(100%, 520px);
+      min-height: 100vh;
+      margin: auto;
+      padding: 18px 14px 35px;
+    }
+
+    h1 {
+      margin: 5px 0 2px;
+      text-align: center;
+      font-size: 28px;
+    }
+
+    .version {
+      margin: 0 0 16px;
+      text-align: center;
+      color: #aaa;
+      font-size: 13px;
+    }
+
+    .status {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .status-box {
+      padding: 10px;
+      text-align: center;
+      background: #17191f;
+      border: 1px solid #3a3d46;
+      border-radius: 12px;
+    }
+
+    .status-box small {
+      display: block;
+      color: #aaa;
+    }
+
+    .status-box strong {
+      display: block;
+      margin-top: 3px;
+      font-size: 18px;
+    }
+
+    .display {
+      min-height: 72px;
+      display: grid;
+      place-items: center;
+      margin: 10px 0;
+      padding: 12px;
+      text-align: center;
+      background: linear-gradient(135deg, #351017, #11141a);
+      border: 1px solid #7d252e;
+      border-radius: 14px;
+      font-weight: bold;
+    }
+
+    .reels {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 7px;
+      padding: 8px;
+      background: #050505;
+      border: 2px solid #555;
+      border-radius: 15px;
+    }
+
+    .reel {
+      overflow: hidden;
+      background: white;
+      color: #111;
+      border: 2px solid #777;
+      border-radius: 9px;
+    }
+
+    .symbol {
+      height: 58px;
+      display: grid;
+      place-items: center;
+      border-bottom: 1px solid #bbb;
+      font-size: 31px;
+    }
+
+    .symbol:nth-child(2) {
+      height: 78px;
+      background: #fff;
+      font-size: 42px;
+      font-weight: bold;
+    }
+
+    .symbol:last-child {
+      border-bottom: none;
+    }
+
+    .reel.spinning {
+      opacity: 0.65;
+      filter: blur(1px);
+    }
+
+    .stop-buttons {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 9px;
+      margin-top: 12px;
+    }
+
+    .stop-button {
+      height: 62px;
+      color: white;
+      background: #242730;
+      border: 2px solid #666;
+      border-radius: 50%;
+      font-weight: bold;
+    }
+
+    .stop-button:disabled {
+      opacity: 0.25;
+    }
+
+    .stop-button:not(:disabled):active {
+      background: #8c1720;
+      transform: scale(0.94);
+    }
+
+    .lever {
+      width: 100%;
+      min-height: 65px;
+      margin-top: 14px;
+      color: white;
+      background: linear-gradient(#d52b36, #701018);
+      border: 1px solid #ff6971;
+      border-radius: 15px;
+      font-size: 21px;
+      font-weight: bold;
+    }
+
+    .lever:disabled {
+      opacity: 0.4;
+    }
+
+    .info {
+      margin-top: 14px;
+      padding: 12px;
+      background: #17191f;
+      border: 1px solid #3a3d46;
+      border-radius: 12px;
+      color: #ccc;
+      font-size: 14px;
+    }
+
+    .reset {
+      width: 100%;
+      margin-top: 10px;
+      padding: 12px;
+      color: white;
+      background: #242730;
+      border: 1px solid #555;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app">
+    <h1>東京喰種</h1>
+    <p class="version">スマスロシミュレーター Ver.0.1</p>
+
+    <section class="status">
+      <div class="status-box">
+        <small>状態</small>
+        <strong id="status">待機中</strong>
+      </div>
+
+      <div class="status-box">
+        <small>ゲーム数</small>
+        <strong id="games">0G</strong>
+      </div>
+    </section>
+
+    <section class="display" id="message">
+      レバーONでスタート
+    </section>
+
+    <section class="reels">
+      <div class="reel" id="reel0">
+        <div class="symbol">🍉</div>
+        <div class="symbol">🐦‍⬛</div>
+        <div class="symbol">🔔</div>
+      </div>
+
+      <div class="reel" id="reel1">
+        <div class="symbol">🔔</div>
+        <div class="symbol">🟦</div>
+        <div class="symbol">🍉</div>
+      </div>
+
+      <div class="reel" id="reel2">
+        <div class="symbol">🟦</div>
+        <div class="symbol">🔔</div>
+        <div class="symbol">🌸</div>
+      </div>
+    </section>
+
+    <section class="stop-buttons">
+      <button class="stop-button" id="stop0" disabled>左</button>
+      <button class="stop-button" id="stop1" disabled>中</button>
+      <button class="stop-button" id="stop2" disabled>右</button>
+    </section>
+
+    <button class="lever" id="lever">レバーON</button>
+
+    <section class="info">
+      基本操作：左 → 中 → 右の順押し<br>
+      左リールは🐦‍⬛狙い
+    </section>
+
+    <button class="reset" id="reset">最初からやり直す</button>
+  </main>
+
+  <script>
+    const reelData = [
+      ["🍉","🍒","🤍","🟦","🔔","🍉","🟥","🌸","🟦","🔔","🍉","🍒","🐦‍⬛","🟦","🔔","🍉","🍒","7️⃣","🟦","🔔"],
+      ["🟥","🟦","🤍","🍒","🔔","🟥","🟦","🌸","🍉","🔔","🟥","🟦","🐦‍⬛","🍉","🔔","🟥","🟦","7️⃣","🍒","🔔"],
+      ["🔔","🟦","🤍","🟥","🍉","🔔","🟦","🌸","🟥","🍉","🔔","🟦","🐦‍⬛","🟥","🍉","🔔","🟦","7️⃣","🟥","🍉"]
+    ];
+
+    const positions = [12, 0, 0];
+    const timers = [null, null, null];
+    const stopped = [true, true, true];
+
+    const lever = document.getElementById("lever");
+    const statusText = document.getElementById("status");
+    const gamesText = document.getElementById("games");
+    const message = document.getElementById("message");
+    const stopButtons = [
+      document.getElementById("stop0"),
+      document.getElementById("stop1"),
+      document.getElementById("stop2")
+    ];
+
+    let games = 0;
+    let playing = false;
+
+    function wrap(number, length) {
+      return (number + length) % length;
+    }
+
+    function drawReel(index) {
+      const reel = document.getElementById("reel" + index);
+      const symbols = reel.querySelectorAll(".symbol");
+      const data = reelData[index];
+      const position = positions[index];
+
+      symbols[0].textContent = data[wrap(position - 1, data.length)];
+      symbols[1].textContent = data[position];
+      symbols[2].textContent = data[wrap(position + 1, data.length)];
+
+      reel.classList.toggle("spinning", !stopped[index]);
+    }
+
+    function drawAll() {
+      drawReel(0);
+      drawReel(1);
+      drawReel(2);
+    }
+
+    function startGame() {
+      if (playing) return;
+
+      playing = true;
+      games++;
+      gamesText.textContent = games + "G";
+      statusText.textContent = "回転中";
+      message.textContent = "左リールから停止";
+
+      lever.disabled = true;
+      stopButtons[0].disabled = false;
+      stopButtons[1].disabled = true;
+      stopButtons[2].disabled = true;
+
+      reelData.forEach((data, index) => {
+        stopped[index] = false;
+
+        timers[index] = setInterval(() => {
+          positions[index] = wrap(positions[index] + 1, data.length);
+          drawReel(index);
+        }, 60 + index * 8);
+      });
+    }
+
+    function stopReel(index) {
+      if (stopped[index]) return;
+
+      clearInterval(timers[index]);
+      timers[index] = null;
+      stopped[index] = true;
+
+      if (index === 0) {
+        positions[0] = reelData[0].indexOf("🐦‍⬛");
+      }
+
+      drawReel(index);
+      stopButtons[index].disabled = true;
+
+      if (index === 0) {
+        stopButtons[1].disabled = false;
+        message.textContent = "次は中リール";
+      } else if (index === 1) {
+        stopButtons[2].disabled = false;
+        message.textContent = "最後に右リール";
+      } else {
+        finishGame();
+      }
+    }
+
+    function finishGame() {
+      playing = false;
+      lever.disabled = false;
+      statusText.textContent = "停止";
+
+      const line = positions.map((position, index) => {
+        return reelData[index][position];
+      });
+
+      if (line.every(symbol => symbol === "🌸")) {
+        message.textContent = "🌸 喰図柄揃い！";
+      } else if (line.every(symbol => symbol === "7️⃣")) {
+        message.textContent = "白7揃い！";
+      } else if (line.every(symbol => symbol === "🐦‍⬛")) {
+        message.textContent = "🐦‍⬛ 黒BAR揃い！";
+      } else {
+        message.textContent = line.join(" ｜ ");
+      }
+    }
+
+    function resetGame() {
+      timers.forEach(timer => {
+        if (timer !== null) clearInterval(timer);
+      });
+
+      positions[0] = 12;
+      positions[1] = 0;
+      positions[2] = 0;
+
+      stopped[0] = true;
+      stopped[1] = true;
+      stopped[2] = true;
+
+      games = 0;
+      playing = false;
+
+      gamesText.textContent = "0G";
+      statusText.textContent = "待機中";
+      message.textContent = "レバーONでスタート";
+      lever.disabled = false;
+
+      stopButtons.forEach(button => {
+        button.disabled = true;
+      });
+
+      drawAll();
+    }
+
+    lever.addEventListener("click", startGame);
+    stopButtons[0].addEventListener("click", () => stopReel(0));
+    stopButtons[1].addEventListener("click", () => stopReel(1));
+    stopButtons[2].addEventListener("click", () => stopReel(2));
+    document.getElementById("reset").addEventListener("click", resetGame);
+
+    drawAll();
+  </script>
+</body>
+</html>
