@@ -1,0 +1,1756 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0507">
+  <title>東京喰種 スマスロシミュレーター</title>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg-top: #1b080c;
+      --bg-bottom: #050608;
+      --panel: #17191f;
+      --panel-2: #20232b;
+      --border: #3a3d46;
+      --text: #ffffff;
+      --muted: #a8aab2;
+      --red: #d52b36;
+      --red-dark: #701018;
+      --green: #5fe08a;
+      --yellow: #ffd264;
+      --blue: #67a7ff;
+      --purple: #c18cff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(var(--bg-top), var(--bg-bottom));
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button {
+      font: inherit;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .app {
+      width: min(100%, 560px);
+      min-height: 100vh;
+      margin: auto;
+      padding:
+        max(18px, env(safe-area-inset-top))
+        14px
+        max(36px, env(safe-area-inset-bottom));
+    }
+
+    h1 {
+      margin: 5px 0 2px;
+      text-align: center;
+      font-size: 28px;
+    }
+
+    .version {
+      margin: 0 0 14px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .status,
+    .counters,
+    .normal-grid,
+    .at-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .counters,
+    .normal-panel,
+    .at-panel {
+      margin-top: 8px;
+    }
+
+    .status-box,
+    .counter-box,
+    .normal-box,
+    .at-box {
+      padding: 10px;
+      text-align: center;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    .status-box small,
+    .counter-box small,
+    .normal-box small,
+    .at-box small {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .status-box strong,
+    .counter-box strong,
+    .normal-box strong,
+    .at-box strong {
+      display: block;
+      margin-top: 3px;
+      font-size: 18px;
+    }
+
+    .counter-box strong.positive {
+      color: var(--green);
+    }
+
+    .counter-box strong.negative {
+      color: #ff7b83;
+    }
+
+    .normal-panel,
+    .at-panel {
+      padding: 10px;
+      background: rgba(23, 25, 31, 0.92);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+    }
+
+    .normal-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-weight: 800;
+    }
+
+    .mode-badge {
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: #30333b;
+      border: 1px solid #555;
+      font-size: 13px;
+    }
+
+    .point-row {
+      margin-top: 9px;
+    }
+
+    .point-label {
+      display: flex;
+      justify-content: space-between;
+      color: #ddd;
+      font-size: 13px;
+      margin-bottom: 5px;
+    }
+
+    .point-track {
+      height: 12px;
+      overflow: hidden;
+      background: #090a0d;
+      border: 1px solid #454952;
+      border-radius: 999px;
+    }
+
+    .point-bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #5d1c2c, #e93a50, #ffd264);
+      transition: width 0.25s ease;
+    }
+
+    .at-panel {
+      border-color: #69498a;
+      background:
+        radial-gradient(circle at top right, rgba(193, 140, 255, 0.14), transparent 45%),
+        rgba(23, 25, 31, 0.94);
+    }
+
+    .at-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-weight: 800;
+    }
+
+    .at-badge {
+      padding: 5px 10px;
+      border-radius: 999px;
+      color: var(--purple);
+      background: #30243d;
+      border: 1px solid var(--purple);
+      font-size: 13px;
+    }
+
+    .at-track {
+      height: 12px;
+      overflow: hidden;
+      margin-top: 9px;
+      background: #090a0d;
+      border: 1px solid #554765;
+      border-radius: 999px;
+    }
+
+    .at-bar {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, #6932a3, #c18cff, #ffd264);
+      transition: width 0.25s ease;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .stage-panel {
+      margin-top: 8px;
+      padding: 10px;
+      background: rgba(23, 25, 31, 0.94);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+    }
+
+    .stage-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-weight: 800;
+    }
+
+    .stage-badge {
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid #777;
+      background: #2b2e35;
+      color: #ddd;
+      font-size: 13px;
+    }
+
+    .stage-visual {
+      position: relative;
+      min-height: 106px;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      text-align: center;
+      border: 1px solid #444;
+      border-radius: 12px;
+      background:
+        radial-gradient(circle at 50% 0%, #3b2025, transparent 58%),
+        linear-gradient(150deg, #17191f, #090a0d);
+      isolation: isolate;
+      transition: background 0.35s ease, border-color 0.35s ease;
+    }
+
+    .stage-visual::before,
+    .stage-visual::after {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      pointer-events: none;
+      z-index: -1;
+      opacity: 0;
+    }
+
+    .stage-visual[data-stage="sky"] {
+      border-color: #5f83ff;
+      background:
+        linear-gradient(to top, rgba(4, 8, 20, 0.92), rgba(23, 39, 91, 0.75)),
+        repeating-linear-gradient(90deg, #101728 0 18px, #19274a 18px 22px);
+    }
+
+    .stage-visual[data-stage="sky"]::before {
+      opacity: 0.55;
+      background: radial-gradient(circle, #8ab4ff 0 2px, transparent 3px);
+      background-size: 32px 32px;
+      animation: stageDrift 5s linear infinite;
+    }
+
+    .stage-visual[data-stage="mind"] {
+      border-color: #c94a66;
+      background:
+        radial-gradient(circle at center, rgba(128, 0, 32, 0.5), transparent 58%),
+        linear-gradient(135deg, #21040b, #050608);
+    }
+
+    .stage-visual[data-stage="mind"]::before {
+      opacity: 0.48;
+      background: repeating-radial-gradient(circle, transparent 0 13px, #9d1737 14px 15px);
+      animation: stagePulse 2.2s ease-in-out infinite;
+    }
+
+    .stage-visual.kakugan {
+      border-color: #ff3d55;
+      box-shadow: 0 0 18px rgba(255, 40, 70, 0.35) inset;
+    }
+
+    .stage-visual.kakugan::after {
+      inset: 12px;
+      border-radius: 50%;
+      opacity: 0.28;
+      background: radial-gradient(circle, #ff3355 0 8%, #220006 9% 24%, transparent 25%);
+      animation: eyeFlash 1.25s ease-in-out infinite;
+    }
+
+    .stage-name {
+      position: relative;
+      z-index: 1;
+      font-size: 23px;
+      font-weight: 900;
+      text-shadow: 0 2px 12px #000;
+    }
+
+    .stage-sub {
+      position: relative;
+      z-index: 1;
+      margin-top: 5px;
+      color: #d7d9df;
+      font-size: 13px;
+      text-shadow: 0 2px 8px #000;
+    }
+
+    .stage-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 7px;
+      margin-top: 8px;
+    }
+
+    .stage-box {
+      padding: 8px 5px;
+      text-align: center;
+      background: #121419;
+      border: 1px solid #343740;
+      border-radius: 10px;
+    }
+
+    .stage-box small {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .stage-box strong {
+      display: block;
+      margin-top: 3px;
+      font-size: 15px;
+    }
+
+    @keyframes stageDrift {
+      from { transform: translate3d(-20px, -20px, 0); }
+      to { transform: translate3d(20px, 20px, 0); }
+    }
+
+    @keyframes stagePulse {
+      0%, 100% { transform: scale(0.88); opacity: 0.2; }
+      50% { transform: scale(1.08); opacity: 0.55; }
+    }
+
+    @keyframes eyeFlash {
+      0%, 100% { transform: scale(0.88); opacity: 0.12; }
+      50% { transform: scale(1.05); opacity: 0.42; }
+    }
+
+    .display {
+      min-height: 104px;
+      display: grid;
+      place-items: center;
+      margin: 10px 0;
+      padding: 12px;
+      text-align: center;
+      white-space: pre-line;
+      line-height: 1.45;
+      background: linear-gradient(135deg, #351017, #11141a);
+      border: 1px solid #7d252e;
+      border-radius: 14px;
+      font-weight: 700;
+    }
+
+    .reels {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 7px;
+      padding: 8px;
+      background: #050505;
+      border: 2px solid #555;
+      border-radius: 15px;
+    }
+
+    .reel {
+      overflow: hidden;
+      background: white;
+      color: #111;
+      border: 2px solid #777;
+      border-radius: 9px;
+    }
+
+    .symbol {
+      height: 58px;
+      display: grid;
+      place-items: center;
+      border-bottom: 1px solid #bbb;
+      font-size: 31px;
+      user-select: none;
+    }
+
+    .symbol:nth-child(2) {
+      height: 78px;
+      font-size: 42px;
+      font-weight: 800;
+      background: #fff;
+    }
+
+    .symbol:last-child {
+      border-bottom: none;
+    }
+
+    .reel.spinning {
+      opacity: 0.6;
+      filter: blur(1px);
+    }
+
+    .stop-buttons {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 9px;
+      margin-top: 12px;
+    }
+
+    .stop-button {
+      height: 62px;
+      color: white;
+      background: var(--panel-2);
+      border: 2px solid #666;
+      border-radius: 50%;
+      font-weight: 800;
+    }
+
+    .stop-button:disabled {
+      opacity: 0.25;
+    }
+
+    .stop-button:not(:disabled):active {
+      background: #8c1720;
+      transform: scale(0.94);
+    }
+
+    .lever {
+      width: 100%;
+      min-height: 65px;
+      margin-top: 14px;
+      color: white;
+      background: linear-gradient(var(--red), var(--red-dark));
+      border: 1px solid #ff6971;
+      border-radius: 15px;
+      font-size: 21px;
+      font-weight: 800;
+    }
+
+    .lever:disabled {
+      opacity: 0.4;
+    }
+
+    .sub-controls {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .sub-controls button {
+      min-height: 46px;
+      padding: 10px;
+      color: white;
+      background: var(--panel-2);
+      border: 1px solid #555;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .sub-controls button:active {
+      transform: scale(0.98);
+    }
+
+    .info {
+      margin-top: 12px;
+      padding: 12px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: #ccc;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .bet-note {
+      color: var(--yellow);
+      font-weight: 700;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app">
+    <h1>東京喰種</h1>
+    <p class="version">スマスロシミュレーター Ver.0.8 FULL</p>
+
+    <section class="status">
+      <div class="status-box">
+        <small>状態</small>
+        <strong id="status">通常時</strong>
+      </div>
+
+      <div class="status-box">
+        <small>ゲーム数</small>
+        <strong id="games">0G</strong>
+      </div>
+    </section>
+
+    <section class="counters">
+      <div class="counter-box">
+        <small>クレジット</small>
+        <strong id="credit">50枚</strong>
+      </div>
+
+      <div class="counter-box">
+        <small>今回の投入</small>
+        <strong id="bet">0枚</strong>
+      </div>
+
+      <div class="counter-box">
+        <small>今回の払い出し</small>
+        <strong id="payout">0枚</strong>
+      </div>
+
+      <div class="counter-box">
+        <small>差枚数</small>
+        <strong id="difference">0枚</strong>
+      </div>
+    </section>
+
+    <section class="normal-panel" id="normalPanel">
+      <div class="normal-title">
+        <span>通常時システム</span>
+        <span class="mode-badge" id="modeBadge">通常A</span>
+      </div>
+
+      <div class="normal-grid">
+        <div class="normal-box">
+          <small>CZポイント</small>
+          <strong id="czPoints">0pt</strong>
+        </div>
+
+        <div class="normal-box">
+          <small>CZ回数</small>
+          <strong id="czCount">0回</strong>
+        </div>
+
+        <div class="normal-box">
+          <small>CZ情報</small>
+          <strong id="czInfo">--</strong>
+        </div>
+
+        <div class="normal-box">
+          <small>モード滞在</small>
+          <strong id="modeGames">0G</strong>
+        </div>
+      </div>
+
+      <div class="point-row">
+        <div class="point-label">
+          <span>100ptでCZ確定</span>
+          <span id="pointPercent">0%</span>
+        </div>
+        <div class="point-track">
+          <div class="point-bar" id="pointBar"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="at-panel hidden" id="atPanel">
+      <div class="at-title">
+        <span>ATシステム</span>
+        <span class="at-badge" id="atBadge">AT 1セット目</span>
+      </div>
+
+      <div class="at-grid">
+        <div class="at-box">
+          <small>AT残り</small>
+          <strong id="atGamesLeft">30G</strong>
+        </div>
+
+        <div class="at-box">
+          <small>AT獲得</small>
+          <strong id="atCoins">0枚</strong>
+        </div>
+
+        <div class="at-box">
+          <small>今回の上乗せ</small>
+          <strong id="atAdded">+0G</strong>
+        </div>
+
+        <div class="at-box">
+          <small>AT消化</small>
+          <strong id="atPlayed">0G</strong>
+        </div>
+      </div>
+
+      <div class="at-track">
+        <div class="at-bar" id="atBar"></div>
+      </div>
+    </section>
+
+    <section class="stage-panel" id="stagePanel">
+      <div class="stage-title">
+        <span>演出ステージ</span>
+        <span class="stage-badge" id="stageBadge">通常</span>
+      </div>
+
+      <div class="stage-visual" id="stageVisual" data-stage="normal">
+        <div>
+          <div class="stage-name" id="stageName">通常ステージ</div>
+          <div class="stage-sub" id="stageSub">静かな街を探索中</div>
+        </div>
+      </div>
+
+      <div class="stage-grid">
+        <div class="stage-box">
+          <small>前兆残り</small>
+          <strong id="stageGames">--</strong>
+        </div>
+        <div class="stage-box">
+          <small>期待度</small>
+          <strong id="stageChance">--</strong>
+        </div>
+        <div class="stage-box">
+          <small>赫眼</small>
+          <strong id="kakuganState">OFF</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="display" id="message">
+      レバーONでスタート
+    </section>
+
+    <section class="reels" aria-label="3リール">
+      <div class="reel" id="reel0">
+        <div class="symbol"></div>
+        <div class="symbol"></div>
+        <div class="symbol"></div>
+      </div>
+
+      <div class="reel" id="reel1">
+        <div class="symbol"></div>
+        <div class="symbol"></div>
+        <div class="symbol"></div>
+      </div>
+
+      <div class="reel" id="reel2">
+        <div class="symbol"></div>
+        <div class="symbol"></div>
+        <div class="symbol"></div>
+      </div>
+    </section>
+
+    <section class="stop-buttons">
+      <button class="stop-button" id="stop0" disabled>左</button>
+      <button class="stop-button" id="stop1" disabled>中</button>
+      <button class="stop-button" id="stop2" disabled>右</button>
+    </section>
+
+    <button class="lever" id="lever">レバーON（3枚BET）</button>
+
+    <section class="sub-controls">
+      <button id="addCredit">クレジット＋50枚</button>
+      <button id="testAt">ATを試す</button>
+      <button id="testStage">演出を試す</button>
+      <button id="reset">最初から</button>
+    </section>
+
+    <section class="info">
+      <span class="bet-note">Ver.0.8 FULL：Ver.0.5に演出ステージを統合</span><br>
+      東京上空・精神世界・赫眼状態が通常時の抽選と連動<br>
+      本前兆なら演出終了後にCZへ、ガセ前兆なら通常へ戻る<br>
+      「演出を試す」で東京上空→精神世界→赫眼を確認可能<br>
+      ※映像・音声は使わず、オリジナルのCSS演出で構成
+    </section>
+  </main>
+
+  <script>
+    "use strict";
+
+    const BET_PER_GAME = 3;
+    const STARTING_CREDIT = 50;
+    const CZ_TARGET_POINTS = 100;
+    const CZ_LENGTH = 8;
+    const AT_START_GAMES = 30;
+    const STAGE_LABELS = {
+      normal: "通常",
+      sky: "東京上空",
+      mind: "精神世界"
+    };
+
+    const reelData = [
+      [
+        "🍉","🍒","⬜","🟦","🔔",
+        "🍉","🟥","🌸","🟦","🔔",
+        "🍉","🍒","🐦‍⬛","🟦","🔔",
+        "🍉","🍒","7️⃣","🟦","🔔"
+      ],
+      [
+        "🟥","🟦","⬜","🍒","🔔",
+        "🟥","🟦","🌸","🍉","🔔",
+        "🟥","🟦","🐦‍⬛","🍉","🔔",
+        "🟥","🟦","7️⃣","🍒","🔔"
+      ],
+      [
+        "🔔","🟦","⬜","🟥","🍉",
+        "🔔","🟦","🌸","🟥","🍉",
+        "🔔","🟦","🐦‍⬛","🟥","🍉",
+        "🔔","🟦","7️⃣","🟥","🍉"
+      ]
+    ];
+
+    const roleTable = [
+      {
+        name: "ベル",
+        weight: 42,
+        target: ["🔔", "🔔", "🔔"],
+        payout: 9,
+        normalPoints: [0, 2],
+        directCzChance: 0,
+        czPower: 6,
+        atExtra: 6,
+        atAddGames: 0
+      },
+      {
+        name: "リプレイ",
+        weight: 28,
+        target: ["🟦", "🟦", "🟦"],
+        payout: 3,
+        normalPoints: [0, 1],
+        directCzChance: 0,
+        czPower: 4,
+        atExtra: 3,
+        atAddGames: 0
+      },
+      {
+        name: "チェリー",
+        weight: 12,
+        target: ["🍒", null, null],
+        payout: 2,
+        normalPoints: [10, 20],
+        directCzChance: 0.05,
+        czPower: 22,
+        atExtra: 8,
+        atAddGames: 2
+      },
+      {
+        name: "スイカ",
+        weight: 8,
+        target: ["🍉", "🍉", "🍉"],
+        payout: 4,
+        normalPoints: [15, 30],
+        directCzChance: 0.1,
+        czPower: 28,
+        atExtra: 11,
+        atAddGames: 3
+      },
+      {
+        name: "赫図柄",
+        weight: 4,
+        target: ["🟥", "🟥", "🟥"],
+        payout: 15,
+        normalPoints: [30, 50],
+        directCzChance: 0.25,
+        czPower: 45,
+        atExtra: 20,
+        atAddGames: 5
+      },
+      {
+        name: "喰図柄",
+        weight: 1,
+        target: ["🌸", "🌸", "🌸"],
+        payout: 15,
+        normalPoints: [100, 100],
+        directCzChance: 1,
+        czPower: 100,
+        atExtra: 35,
+        atAddGames: 10
+      },
+      {
+        name: "白7",
+        weight: 0.2,
+        target: ["7️⃣", "7️⃣", "7️⃣"],
+        payout: 15,
+        normalPoints: [100, 100],
+        directCzChance: 1,
+        czPower: 100,
+        atExtra: 85,
+        atAddGames: 20
+      },
+      {
+        name: "ハズレ",
+        weight: 4.8,
+        target: [null, null, null],
+        payout: 0,
+        normalPoints: [0, 0],
+        directCzChance: 0,
+        czPower: 0,
+        atExtra: 0,
+        atAddGames: 0
+      }
+    ];
+
+    const modes = [
+      {
+        name: "通常A",
+        pointMultiplier: 1,
+        directMultiplier: 1,
+        color: "#81858f"
+      },
+      {
+        name: "通常B",
+        pointMultiplier: 1.15,
+        directMultiplier: 1.2,
+        color: "#67a7ff"
+      },
+      {
+        name: "チャンス",
+        pointMultiplier: 1.35,
+        directMultiplier: 1.6,
+        color: "#ffd264"
+      },
+      {
+        name: "高確",
+        pointMultiplier: 1.6,
+        directMultiplier: 2.2,
+        color: "#ff6b7b"
+      }
+    ];
+
+    const positions = [12, 12, 12];
+    const timers = [null, null, null];
+    const stopped = [true, true, true];
+
+    const lever = document.getElementById("lever");
+    const statusText = document.getElementById("status");
+    const gamesText = document.getElementById("games");
+    const message = document.getElementById("message");
+    const creditText = document.getElementById("credit");
+    const betText = document.getElementById("bet");
+    const payoutText = document.getElementById("payout");
+    const differenceText = document.getElementById("difference");
+    const modeBadge = document.getElementById("modeBadge");
+    const czPointsText = document.getElementById("czPoints");
+    const czCountText = document.getElementById("czCount");
+    const czInfoText = document.getElementById("czInfo");
+    const modeGamesText = document.getElementById("modeGames");
+    const pointPercentText = document.getElementById("pointPercent");
+    const pointBar = document.getElementById("pointBar");
+    const normalPanel = document.getElementById("normalPanel");
+    const atPanel = document.getElementById("atPanel");
+    const atBadge = document.getElementById("atBadge");
+    const atGamesLeftText = document.getElementById("atGamesLeft");
+    const atCoinsText = document.getElementById("atCoins");
+    const atAddedText = document.getElementById("atAdded");
+    const atPlayedText = document.getElementById("atPlayed");
+    const atBar = document.getElementById("atBar");
+    const stagePanel = document.getElementById("stagePanel");
+    const stageBadge = document.getElementById("stageBadge");
+    const stageVisual = document.getElementById("stageVisual");
+    const stageName = document.getElementById("stageName");
+    const stageSub = document.getElementById("stageSub");
+    const stageGamesText = document.getElementById("stageGames");
+    const stageChanceText = document.getElementById("stageChance");
+    const kakuganStateText = document.getElementById("kakuganState");
+
+    const stopButtons = [
+      document.getElementById("stop0"),
+      document.getElementById("stop1"),
+      document.getElementById("stop2")
+    ];
+
+    let games = 0;
+    let playing = false;
+    let credit = STARTING_CREDIT;
+    let totalIn = 0;
+    let totalOut = 0;
+    let currentBet = 0;
+    let lastPayout = 0;
+    let currentRole = roleTable[roleTable.length - 1];
+
+    let gameState = "normal";
+    let pendingCz = false;
+    let currentModeIndex = 0;
+    let modeGames = 0;
+    let czPoints = 0;
+    let czCount = 0;
+    let czGamesLeft = 0;
+    let czBattlePoints = 0;
+
+    let pendingAt = false;
+    let atGamesLeft = 0;
+    let atCoins = 0;
+    let atPlayedGames = 0;
+    let atSetCount = 0;
+    let atLastAdded = 0;
+
+    let stageState = "normal";
+    let stageGamesLeft = 0;
+    let stageExpectation = 0;
+    let stageIsReal = false;
+    let kakuganGamesLeft = 0;
+    let stageTestStep = 0;
+
+    function wrap(number, length) {
+      return ((number % length) + length) % length;
+    }
+
+    function randomInteger(minimum, maximum) {
+      return Math.floor(
+        Math.random() * (maximum - minimum + 1)
+      ) + minimum;
+    }
+
+    function drawReel(index) {
+      const reel = document.getElementById("reel" + index);
+      const symbols = reel.querySelectorAll(".symbol");
+      const data = reelData[index];
+      const position = positions[index];
+
+      symbols[0].textContent =
+        data[wrap(position - 1, data.length)];
+
+      symbols[1].textContent = data[position];
+
+      symbols[2].textContent =
+        data[wrap(position + 1, data.length)];
+
+      reel.classList.toggle("spinning", !stopped[index]);
+    }
+
+    function drawAll() {
+      drawReel(0);
+      drawReel(1);
+      drawReel(2);
+    }
+
+    function updateCounters() {
+      const difference = totalOut - totalIn;
+
+      creditText.textContent = credit + "枚";
+      betText.textContent = currentBet + "枚";
+      payoutText.textContent = lastPayout + "枚";
+      differenceText.textContent =
+        (difference > 0 ? "+" : "") + difference + "枚";
+
+      differenceText.classList.toggle(
+        "positive",
+        difference > 0
+      );
+
+      differenceText.classList.toggle(
+        "negative",
+        difference < 0
+      );
+
+      lever.disabled = playing || credit < BET_PER_GAME;
+    }
+
+    function clearStage() {
+      stageState = "normal";
+      stageGamesLeft = 0;
+      stageExpectation = 0;
+      stageIsReal = false;
+    }
+
+    function startStage(type, isReal, gamesLeft, expectation) {
+      stageState = type;
+      stageIsReal = isReal;
+      stageGamesLeft = gamesLeft;
+      stageExpectation = Math.max(1, Math.min(99, expectation));
+      updateStageDisplay();
+    }
+
+    function startKakugan(gamesLeft = 5) {
+      kakuganGamesLeft = Math.max(kakuganGamesLeft, gamesLeft);
+      updateStageDisplay();
+    }
+
+    function updateStageDisplay() {
+      const showStage = gameState === "normal";
+      stagePanel.classList.toggle("hidden", !showStage);
+
+      stageVisual.dataset.stage = stageState;
+      stageVisual.classList.toggle("kakugan", kakuganGamesLeft > 0);
+
+      const label = STAGE_LABELS[stageState] || "通常";
+      stageBadge.textContent = label;
+      stageGamesText.textContent =
+        stageState === "normal" ? "--" : stageGamesLeft + "G";
+      stageChanceText.textContent =
+        stageState === "normal" ? "--" : stageExpectation + "%";
+      kakuganStateText.textContent =
+        kakuganGamesLeft > 0 ? "ON 残" + kakuganGamesLeft + "G" : "OFF";
+
+      if (stageState === "sky") {
+        stageName.textContent = "東京上空";
+        stageSub.textContent = stageIsReal
+          ? "空気が変わる――本前兆の可能性大"
+          : "不穏な気配。CZへの道を探せ";
+      } else if (stageState === "mind") {
+        stageName.textContent = "精神世界";
+        stageSub.textContent = stageIsReal
+          ? "内なる声が近づく――決着は目前"
+          : "記憶の深層を進め";
+      } else {
+        stageName.textContent = kakuganGamesLeft > 0
+          ? "赫眼状態"
+          : "通常ステージ";
+        stageSub.textContent = kakuganGamesLeft > 0
+          ? "レア役のCZポイントと直撃率が上昇中"
+          : "静かな街を探索中";
+      }
+    }
+
+    function getStagePointMultiplier() {
+      let multiplier = 1;
+      if (stageState === "sky") multiplier *= 1.15;
+      if (stageState === "mind") multiplier *= 1.35;
+      if (kakuganGamesLeft > 0) multiplier *= 1.5;
+      return multiplier;
+    }
+
+    function getStageDirectMultiplier() {
+      let multiplier = 1;
+      if (stageState === "sky") multiplier *= 1.25;
+      if (stageState === "mind") multiplier *= 1.7;
+      if (kakuganGamesLeft > 0) multiplier *= 1.8;
+      return multiplier;
+    }
+
+    function maybeStartNormalStage(role) {
+      if (stageState !== "normal" || pendingCz) return "";
+
+      let chance = 0.015;
+      if (role.name === "チェリー") chance = 0.2;
+      if (role.name === "スイカ") chance = 0.28;
+      if (role.name === "赫図柄") chance = 0.52;
+      if (role.name === "喰図柄" || role.name === "白7") chance = 1;
+
+      chance *= modes[currentModeIndex].directMultiplier;
+      if (Math.random() >= Math.min(0.95, chance)) return "";
+
+      const mindChance =
+        role.name === "スイカ" ? 0.45 :
+        role.name === "赫図柄" ? 0.6 :
+        role.name === "喰図柄" || role.name === "白7" ? 0.75 : 0.25;
+      const type = Math.random() < mindChance ? "mind" : "sky";
+      const baseExpectation =
+        role.name === "赫図柄" ? 65 :
+        role.name === "喰図柄" || role.name === "白7" ? 92 :
+        role.name === "スイカ" ? 48 : 30;
+      const isReal = Math.random() < baseExpectation / 100;
+      const length = type === "mind"
+        ? randomInteger(4, 6)
+        : randomInteger(5, 8);
+
+      startStage(type, isReal, length, baseExpectation);
+      return "\n" + STAGE_LABELS[type] + "へ移行！";
+    }
+
+    function advanceStage(success) {
+      let result = "";
+
+      if (kakuganGamesLeft > 0) {
+        kakuganGamesLeft--;
+        if (kakuganGamesLeft === 0) {
+          result += "\n赫眼状態終了";
+        }
+      }
+
+      if (stageState === "normal") {
+        updateStageDisplay();
+        return result;
+      }
+
+      if (success) {
+        if (currentRole.name === "チェリー") stageExpectation += 8;
+        if (currentRole.name === "スイカ") stageExpectation += 12;
+        if (currentRole.name === "赫図柄") stageExpectation += 22;
+        if (currentRole.name === "喰図柄" || currentRole.name === "白7") {
+          stageExpectation = 99;
+          stageIsReal = true;
+        }
+        stageExpectation = Math.min(99, stageExpectation);
+      }
+
+      stageGamesLeft--;
+
+      if (stageGamesLeft <= 0) {
+        const hit = stageIsReal || Math.random() < stageExpectation / 140;
+        const finishedStage = STAGE_LABELS[stageState];
+        clearStage();
+
+        if (hit) {
+          pendingCz = true;
+          result += "\n" + finishedStage + "成功！次ゲームCZ";
+        } else {
+          result += "\n" + finishedStage + "終了…通常へ";
+        }
+      }
+
+      updateStageDisplay();
+      return result;
+    }
+
+    function updateNormalDisplay() {
+      const isAt = gameState === "at";
+      normalPanel.classList.toggle("hidden", isAt);
+      atPanel.classList.toggle("hidden", !isAt);
+      updateStageDisplay();
+
+      if (isAt) {
+        const maxForBar = Math.max(AT_START_GAMES, atGamesLeft);
+        const percent = Math.max(0, Math.min(100,
+          atGamesLeft / maxForBar * 100
+        ));
+
+        atBadge.textContent = "AT " + atSetCount + "セット目";
+        atGamesLeftText.textContent = atGamesLeft + "G";
+        atCoinsText.textContent = atCoins + "枚";
+        atAddedText.textContent = "+" + atLastAdded + "G";
+        atPlayedText.textContent = atPlayedGames + "G";
+        atBar.style.width = percent + "%";
+        statusText.textContent = playing ? "AT回転中" : "AT中";
+        return;
+      }
+
+      const mode = modes[currentModeIndex];
+      const displayedPoints = Math.min(czPoints, CZ_TARGET_POINTS);
+      const percent = Math.floor(
+        displayedPoints / CZ_TARGET_POINTS * 100
+      );
+
+      modeBadge.textContent = mode.name;
+      modeBadge.style.color = mode.color;
+      modeBadge.style.borderColor = mode.color;
+
+      czPointsText.textContent = displayedPoints + "pt";
+      czCountText.textContent = czCount + "回";
+      modeGamesText.textContent = modeGames + "G";
+      pointPercentText.textContent = percent + "%";
+      pointBar.style.width = percent + "%";
+
+      if (gameState === "cz") {
+        czInfoText.textContent =
+          "残" + czGamesLeft + "G / " + czBattlePoints + "pt";
+        statusText.textContent = playing ? "CZ回転中" : "CZ中";
+      } else if (pendingAt) {
+        czInfoText.textContent = "AT次G";
+        statusText.textContent = "AT準備";
+      } else if (pendingCz) {
+        czInfoText.textContent = "次G突入";
+        statusText.textContent = "CZ前兆";
+      } else if (stageState !== "normal") {
+        czInfoText.textContent =
+          STAGE_LABELS[stageState] + " 残" + stageGamesLeft + "G";
+        statusText.textContent = playing
+          ? STAGE_LABELS[stageState] + "回転中"
+          : STAGE_LABELS[stageState];
+      } else if (kakuganGamesLeft > 0) {
+        czInfoText.textContent = "赫眼 残" + kakuganGamesLeft + "G";
+        statusText.textContent = playing ? "赫眼回転中" : "赫眼状態";
+      } else {
+        czInfoText.textContent = "--";
+        statusText.textContent = playing ? "回転中" : "通常時";
+      }
+    }
+
+    function selectRole() {
+      const totalWeight = roleTable.reduce(
+        (total, role) => total + role.weight,
+        0
+      );
+
+      let random = Math.random() * totalWeight;
+
+      for (const role of roleTable) {
+        random -= role.weight;
+
+        if (random < 0) {
+          return role;
+        }
+      }
+
+      return roleTable[roleTable.length - 1];
+    }
+
+    function selectModeIndex() {
+      const roll = Math.random();
+
+      if (roll < 0.48) return 0;
+      if (roll < 0.78) return 1;
+      if (roll < 0.95) return 2;
+      return 3;
+    }
+
+    function maybeChangeMode(role) {
+      let changeChance = 0.045;
+
+      if (role.name === "チェリー") changeChance += 0.08;
+      if (role.name === "スイカ") changeChance += 0.12;
+      if (role.name === "赫図柄") changeChance += 0.22;
+
+      if (modeGames >= 50) {
+        changeChance += 0.25;
+      }
+
+      if (Math.random() < changeChance) {
+        const oldMode = currentModeIndex;
+        currentModeIndex = selectModeIndex();
+        modeGames = 0;
+
+        if (currentModeIndex !== oldMode) {
+          return "モード移行：" + modes[currentModeIndex].name;
+        }
+      }
+
+      return "";
+    }
+
+    function findTargetPosition(
+      reelIndex,
+      targetSymbol,
+      maximumSlip
+    ) {
+      const data = reelData[reelIndex];
+      const startPosition = positions[reelIndex];
+
+      if (targetSymbol === null) {
+        return startPosition;
+      }
+
+      for (let slip = 0; slip <= maximumSlip; slip++) {
+        const checkPosition = wrap(
+          startPosition + slip,
+          data.length
+        );
+
+        if (data[checkPosition] === targetSymbol) {
+          return checkPosition;
+        }
+      }
+
+      return startPosition;
+    }
+
+    function beginCz() {
+      clearStage();
+      kakuganGamesLeft = 0;
+      gameState = "cz";
+      pendingCz = false;
+      czGamesLeft = CZ_LENGTH;
+      czBattlePoints = 0;
+      czPoints = 0;
+      czCount++;
+      updateNormalDisplay();
+    }
+
+    function beginAt() {
+      clearStage();
+      kakuganGamesLeft = 0;
+      gameState = "at";
+      pendingAt = false;
+      atGamesLeft = AT_START_GAMES;
+      atCoins = 0;
+      atPlayedGames = 0;
+      atLastAdded = 0;
+      atSetCount++;
+      updateNormalDisplay();
+    }
+
+    function startGame() {
+      if (playing) {
+        return;
+      }
+
+      if (credit < BET_PER_GAME) {
+        message.textContent =
+          "クレジット不足です\n＋50枚を押してください";
+        updateCounters();
+        return;
+      }
+
+      if (pendingAt) {
+        beginAt();
+      } else if (pendingCz) {
+        beginCz();
+      }
+
+      playing = true;
+      games++;
+      currentRole = selectRole();
+      currentBet = BET_PER_GAME;
+      lastPayout = 0;
+
+      credit -= BET_PER_GAME;
+      totalIn += BET_PER_GAME;
+
+      if (gameState === "normal") {
+        modeGames++;
+      }
+
+      gamesText.textContent = games + "G";
+      message.textContent =
+        gameState === "cz"
+          ? "CZ中：左リールから停止"
+          : gameState === "at"
+            ? "AT中：左リールから停止"
+            : "左リールから停止";
+
+      stopButtons[0].disabled = false;
+      stopButtons[1].disabled = true;
+      stopButtons[2].disabled = true;
+
+      updateCounters();
+      updateNormalDisplay();
+
+      reelData.forEach((data, index) => {
+        stopped[index] = false;
+
+        timers[index] = setInterval(() => {
+          positions[index] = wrap(
+            positions[index] + 1,
+            data.length
+          );
+
+          drawReel(index);
+        }, 55 + index * 7);
+      });
+    }
+
+    function stopReel(index) {
+      if (stopped[index]) {
+        return;
+      }
+
+      clearInterval(timers[index]);
+      timers[index] = null;
+      stopped[index] = true;
+
+      let targetSymbol = currentRole.target[index];
+
+      if (
+        index === 0 &&
+        currentRole.name === "ハズレ"
+      ) {
+        targetSymbol = "🐦‍⬛";
+      }
+
+      const specialRole =
+        currentRole.name === "喰図柄" ||
+        currentRole.name === "白7";
+
+      const maximumSlip = specialRole ? 19 : 4;
+
+      positions[index] = findTargetPosition(
+        index,
+        targetSymbol,
+        maximumSlip
+      );
+
+      drawReel(index);
+      stopButtons[index].disabled = true;
+
+      if (index === 0) {
+        stopButtons[1].disabled = false;
+        message.textContent = "次は中リール";
+        return;
+      }
+
+      if (index === 1) {
+        stopButtons[2].disabled = false;
+        message.textContent = "最後に右リール";
+        return;
+      }
+
+      finishGame();
+    }
+
+    function getMiddleLine() {
+      return positions.map((position, index) => {
+        return reelData[index][position];
+      });
+    }
+
+    function roleWasDisplayed(line) {
+      if (currentRole.name === "ハズレ") {
+        return true;
+      }
+
+      if (currentRole.name === "チェリー") {
+        return line[0] === "🍒";
+      }
+
+      const targetSymbol = currentRole.target[0];
+
+      return line.every(symbol => {
+        return symbol === targetSymbol;
+      });
+    }
+
+    function processNormalGame(success) {
+      const stageWasActive = stageState !== "normal";
+
+      if (!success) {
+        let missResult = "CZポイント：取りこぼしで獲得なし";
+        missResult += advanceStage(false);
+        return missResult;
+      }
+
+      const mode = modes[currentModeIndex];
+      const basePoints = randomInteger(
+        currentRole.normalPoints[0],
+        currentRole.normalPoints[1]
+      );
+      const gainedPoints = Math.round(
+        basePoints *
+        mode.pointMultiplier *
+        getStagePointMultiplier()
+      );
+
+      czPoints = Math.min(
+        CZ_TARGET_POINTS,
+        czPoints + gainedPoints
+      );
+
+      const directChance = Math.min(
+        1,
+        currentRole.directCzChance *
+        mode.directMultiplier *
+        getStageDirectMultiplier()
+      );
+
+      const directHit = Math.random() < directChance;
+      const pointHit = czPoints >= CZ_TARGET_POINTS;
+
+      let result = "CZポイント：+" + gainedPoints + "pt";
+
+      if (directHit || pointHit) {
+        if (stageState === "normal") {
+          startStage(
+            Math.random() < 0.45 ? "mind" : "sky",
+            true,
+            randomInteger(3, 6),
+            95
+          );
+          result += directHit
+            ? "\n直撃当選！本前兆へ"
+            : "\n100pt到達！本前兆へ";
+        } else {
+          stageIsReal = true;
+          stageExpectation = 99;
+          result += "\n前兆が本前兆に昇格！";
+        }
+      } else {
+        const modeMessage = maybeChangeMode(currentRole);
+        if (modeMessage) result += "\n" + modeMessage;
+
+        if (!stageWasActive && stageState === "normal") {
+          result += maybeStartNormalStage(currentRole);
+        }
+      }
+
+      if (
+        currentRole.name === "赫図柄" &&
+        Math.random() < 0.55
+      ) {
+        startKakugan(randomInteger(4, 7));
+        result += "\n赫眼状態突入！";
+      }
+
+      if (stageWasActive) {
+        result += advanceStage(true);
+      } else {
+        updateStageDisplay();
+      }
+
+      return result;
+    }
+
+    function processCzGame(success) {
+      const gained = success ? currentRole.czPower : 0;
+      czBattlePoints = Math.min(
+        CZ_TARGET_POINTS,
+        czBattlePoints + gained
+      );
+      czGamesLeft--;
+
+      let result = "CZ獲得：+" + gained + "pt";
+
+      if (czBattlePoints >= CZ_TARGET_POINTS) {
+        result += "\nCZ成功！次ゲームからAT！";
+        gameState = "normal";
+        pendingAt = true;
+        czGamesLeft = 0;
+        czBattlePoints = 0;
+        currentModeIndex = selectModeIndex();
+        modeGames = 0;
+        return result;
+      }
+
+      if (czGamesLeft <= 0) {
+        result += "\nCZ失敗…通常時へ";
+        gameState = "normal";
+        czBattlePoints = 0;
+        currentModeIndex = selectModeIndex();
+        modeGames = 0;
+      } else {
+        result +=
+          "\n残り" + czGamesLeft + "G / " +
+          czBattlePoints + "pt";
+      }
+
+      return result;
+    }
+
+    function processAtGame(success) {
+      atGamesLeft--;
+      atPlayedGames++;
+
+      atLastAdded = success ? currentRole.atAddGames : 0;
+      atGamesLeft += atLastAdded;
+      atCoins += lastPayout;
+
+      let result =
+        "AT獲得：" + lastPayout + "枚" +
+        "\n残り" + atGamesLeft + "G";
+
+      if (atLastAdded > 0) {
+        result += " / +" + atLastAdded + "G上乗せ！";
+      }
+
+      if (atGamesLeft <= 0) {
+        const finishedCoins = atCoins;
+        result =
+          "AT終了！\nAT獲得：" + finishedCoins + "枚" +
+          " / 消化：" + atPlayedGames + "G";
+
+        gameState = "normal";
+        currentModeIndex = selectModeIndex();
+        modeGames = 0;
+        czPoints = 0;
+        atGamesLeft = 0;
+      }
+
+      return result;
+    }
+
+    function finishGame() {
+      const line = getMiddleLine();
+      const success = roleWasDisplayed(line);
+
+      const basePayout = success ? currentRole.payout : 0;
+      const atExtra =
+        gameState === "at" && success
+          ? currentRole.atExtra
+          : 0;
+
+      lastPayout = basePayout + atExtra;
+      credit += lastPayout;
+      totalOut += lastPayout;
+
+      let systemMessage;
+
+      if (gameState === "cz") {
+        systemMessage = processCzGame(success);
+      } else if (gameState === "at") {
+        systemMessage = processAtGame(success);
+      } else {
+        systemMessage = processNormalGame(success);
+      }
+
+      playing = false;
+
+      if (
+        currentRole.name !== "ハズレ" &&
+        !success
+      ) {
+        message.textContent =
+          "成立役：" +
+          currentRole.name +
+          "（取りこぼし）\n払い出し：0枚\n" +
+          systemMessage + "\n" +
+          line.join(" ｜ ");
+      } else {
+        message.textContent =
+          "成立役：" +
+          currentRole.name +
+          "\n払い出し：" +
+          lastPayout +
+          "枚\n" +
+          systemMessage + "\n" +
+          line.join(" ｜ ");
+      }
+
+      updateCounters();
+      updateNormalDisplay();
+    }
+
+    function addCredit() {
+      if (playing) {
+        return;
+      }
+
+      credit += 50;
+      message.textContent = "クレジットを50枚補充しました";
+      updateCounters();
+    }
+
+    function testAt() {
+      if (playing) {
+        return;
+      }
+
+      pendingCz = false;
+      pendingAt = false;
+      beginAt();
+      message.textContent =
+        "ATテスト開始！\n30Gを遊んで動作確認してください";
+      updateCounters();
+    }
+
+    function testStage() {
+      if (playing || gameState !== "normal") return;
+
+      stageTestStep = (stageTestStep + 1) % 4;
+
+      if (stageTestStep === 1) {
+        startStage("sky", false, 6, 35);
+        message.textContent = "演出テスト：東京上空（ガセ）";
+      } else if (stageTestStep === 2) {
+        startStage("mind", true, 5, 88);
+        message.textContent = "演出テスト：精神世界（本前兆）";
+      } else if (stageTestStep === 3) {
+        clearStage();
+        startKakugan(6);
+        message.textContent = "演出テスト：赫眼状態";
+      } else {
+        clearStage();
+        kakuganGamesLeft = 0;
+        message.textContent = "演出テスト終了：通常へ";
+      }
+
+      updateNormalDisplay();
+    }
+
+    function resetGame() {
+      timers.forEach(timer => {
+        if (timer !== null) {
+          clearInterval(timer);
+        }
+      });
+
+      positions[0] = 12;
+      positions[1] = 12;
+      positions[2] = 12;
+
+      stopped[0] = true;
+      stopped[1] = true;
+      stopped[2] = true;
+
+      games = 0;
+      playing = false;
+      credit = STARTING_CREDIT;
+      totalIn = 0;
+      totalOut = 0;
+      currentBet = 0;
+      lastPayout = 0;
+
+      gameState = "normal";
+      pendingCz = false;
+      currentModeIndex = 0;
+      modeGames = 0;
+      czPoints = 0;
+      czCount = 0;
+      czGamesLeft = 0;
+      czBattlePoints = 0;
+
+      pendingAt = false;
+      atGamesLeft = 0;
+      atCoins = 0;
+      atPlayedGames = 0;
+      atSetCount = 0;
+      atLastAdded = 0;
+
+      clearStage();
+      kakuganGamesLeft = 0;
+      stageTestStep = 0;
+
+      gamesText.textContent = "0G";
+      message.textContent = "レバーONでスタート";
+
+      stopButtons.forEach(button => {
+        button.disabled = true;
+      });
+
+      drawAll();
+      updateCounters();
+      updateNormalDisplay();
+    }
+
+    lever.addEventListener("click", startGame);
+
+    stopButtons[0].addEventListener("click", () => {
+      stopReel(0);
+    });
+
+    stopButtons[1].addEventListener("click", () => {
+      stopReel(1);
+    });
+
+    stopButtons[2].addEventListener("click", () => {
+      stopReel(2);
+    });
+
+    document
+      .getElementById("addCredit")
+      .addEventListener("click", addCredit);
+
+    document
+      .getElementById("testAt")
+      .addEventListener("click", testAt);
+
+    document
+      .getElementById("testStage")
+      .addEventListener("click", testStage);
+
+    document
+      .getElementById("reset")
+      .addEventListener("click", resetGame);
+
+    drawAll();
+    updateCounters();
+    updateNormalDisplay();
+  </script>
+</body>
+</html>
