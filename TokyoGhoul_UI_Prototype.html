@@ -1,0 +1,60 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tokyo Ghoul UI Prototype</title>
+<style>
+body{margin:0;background:#0b0b0d;color:#fff;font-family:Arial,sans-serif}
+.top{background:#18181d;padding:12px;text-align:center;border-bottom:2px solid #a00018}
+.machine{max-width:430px;margin:20px auto;background:#202028;border:4px solid #555;border-radius:18px;padding:16px}
+.reels{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.reel{background:#f7f7f7;border-radius:10px;padding:6px}
+.sym{height:70px;border-bottom:1px solid #ccc;display:flex;align-items:center;justify-content:center;font-weight:bold}
+.mid{background:#fff5f5;border:3px solid #d00020}
+.bar{background:#111;color:#fff;padding:4px 12px;border-radius:5px}
+.ccg{background:#ddd;color:#222;padding:4px 12px;border-radius:5px}
+.kaku{background:#b30000;padding:4px 12px;border-radius:5px}
+.kui{background:#6d2db7;padding:4px 12px;border-radius:5px}
+.rep{background:#1477ff;padding:4px 12px;border-radius:5px}
+.bell{background:#d4a000;color:#222;padding:4px 12px;border-radius:5px}
+.stop{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+button{padding:12px;border:none;border-radius:12px;font-size:16px}
+.lever{width:100%;margin-top:14px;background:#c1001f;color:#fff}
+.legend{margin-top:16px;font-size:13px;display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+</style>
+</head>
+<body>
+<div class="top"><h2>東京喰種 スマスロ UIプロトタイプ</h2></div>
+<div class="machine">
+<div class="reels">
+<div class="reel">
+<div class="sym"><span class="bar">BAR</span></div>
+<div class="sym mid"><span class="kui">喰</span></div>
+<div class="sym"><span class="rep">REPLAY</span></div>
+</div>
+<div class="reel">
+<div class="sym"><span class="bell">BELL</span></div>
+<div class="sym mid"><span class="kaku">赫</span></div>
+<div class="sym"><span>🍒 CHERRY</span></div>
+</div>
+<div class="reel">
+<div class="sym"><span class="ccg">CCG</span></div>
+<div class="sym mid"><span>７</span></div>
+<div class="sym"><span>🍉 WATER</span></div>
+</div>
+</div>
+<div class="stop">
+<button>左</button><button>中</button><button>右</button>
+</div>
+<button class="lever">レバーON</button>
+<div class="legend">
+<div>⬛ BAR</div><div>🩶 CCG(ハズレ)</div>
+<div>🟣 喰図柄</div><div>🔴 赫図柄</div>
+<div>🔵 REPLAY</div><div>🟡 BELL</div>
+<div>🍒 CHERRY</div><div>🍉 WATER</div>
+</div>
+</div>
+</body>
+</html>
