@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tokyo Ghoul Simulator Ver0.7 Preview</title>
+<style>
+body{margin:0;background:#111;color:#fff;font-family:system-ui;padding:16px}
+.box{background:#222;border-radius:12px;padding:14px;margin:12px 0}
+button{padding:12px 18px;font-size:16px}
+.badge{display:inline-block;padding:4px 8px;background:#b00020;border-radius:8px}
+</style>
+</head>
+<body>
+<h1>Ver.0.7 Preview</h1>
+<div class="box">
+<div>通常モード: <span id="mode">通常A</span></div>
+<div>状態: <span id="state">通常</span></div>
+<div>赫眼: <span id="k">OFF</span></div>
+<div>東京上空: <span id="sky">待機</span></div>
+<div>精神世界: <span id="mind">待機</span></div>
+</div>
+
+<div class="box">
+<button onclick="spin()">レバーON</button>
+<button onclick="kakugan()">赫眼テスト</button>
+</div>
+
+<div class="box" id="log">待機中</div>
+
+<script>
+const modes=["通常A","通常B","チャンス","高確"];
+function spin(){
+ mode.textContent=modes[Math.floor(Math.random()*4)];
+ const r=Math.random();
+ state.textContent="通常";
+ sky.textContent="待機";
+ mind.textContent="待機";
+ let t="ハズレ";
+ if(r<0.08){
+   sky.textContent="本前兆";
+   state.textContent="東京上空";
+   t="東京上空へ移行";
+ }else if(r<0.14){
+   mind.textContent="突入";
+   state.textContent="精神世界";
+   t="精神世界へ移行";
+ }else if(r<0.18){
+   kakugan();
+   return;
+ }
+ log.textContent=t;
+}
+function kakugan(){
+ k.textContent="ON";
+ state.textContent="赫眼";
+ log.textContent="赫眼状態突入（仮実装）";
+}
+</script>
+</body>
+</html>
