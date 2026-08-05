@@ -214,6 +214,158 @@
       display: none !important;
     }
 
+    .stage-panel {
+      margin-top: 8px;
+      padding: 10px;
+      background: rgba(23, 25, 31, 0.94);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+    }
+
+    .stage-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-weight: 800;
+    }
+
+    .stage-badge {
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid #777;
+      background: #2b2e35;
+      color: #ddd;
+      font-size: 13px;
+    }
+
+    .stage-visual {
+      position: relative;
+      min-height: 106px;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      text-align: center;
+      border: 1px solid #444;
+      border-radius: 12px;
+      background:
+        radial-gradient(circle at 50% 0%, #3b2025, transparent 58%),
+        linear-gradient(150deg, #17191f, #090a0d);
+      isolation: isolate;
+      transition: background 0.35s ease, border-color 0.35s ease;
+    }
+
+    .stage-visual::before,
+    .stage-visual::after {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      pointer-events: none;
+      z-index: -1;
+      opacity: 0;
+    }
+
+    .stage-visual[data-stage="sky"] {
+      border-color: #5f83ff;
+      background:
+        linear-gradient(to top, rgba(4, 8, 20, 0.92), rgba(23, 39, 91, 0.75)),
+        repeating-linear-gradient(90deg, #101728 0 18px, #19274a 18px 22px);
+    }
+
+    .stage-visual[data-stage="sky"]::before {
+      opacity: 0.55;
+      background: radial-gradient(circle, #8ab4ff 0 2px, transparent 3px);
+      background-size: 32px 32px;
+      animation: stageDrift 5s linear infinite;
+    }
+
+    .stage-visual[data-stage="mind"] {
+      border-color: #c94a66;
+      background:
+        radial-gradient(circle at center, rgba(128, 0, 32, 0.5), transparent 58%),
+        linear-gradient(135deg, #21040b, #050608);
+    }
+
+    .stage-visual[data-stage="mind"]::before {
+      opacity: 0.48;
+      background: repeating-radial-gradient(circle, transparent 0 13px, #9d1737 14px 15px);
+      animation: stagePulse 2.2s ease-in-out infinite;
+    }
+
+    .stage-visual.kakugan {
+      border-color: #ff3d55;
+      box-shadow: 0 0 18px rgba(255, 40, 70, 0.35) inset;
+    }
+
+    .stage-visual.kakugan::after {
+      inset: 12px;
+      border-radius: 50%;
+      opacity: 0.28;
+      background: radial-gradient(circle, #ff3355 0 8%, #220006 9% 24%, transparent 25%);
+      animation: eyeFlash 1.25s ease-in-out infinite;
+    }
+
+    .stage-name {
+      position: relative;
+      z-index: 1;
+      font-size: 23px;
+      font-weight: 900;
+      text-shadow: 0 2px 12px #000;
+    }
+
+    .stage-sub {
+      position: relative;
+      z-index: 1;
+      margin-top: 5px;
+      color: #d7d9df;
+      font-size: 13px;
+      text-shadow: 0 2px 8px #000;
+    }
+
+    .stage-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 7px;
+      margin-top: 8px;
+    }
+
+    .stage-box {
+      padding: 8px 5px;
+      text-align: center;
+      background: #121419;
+      border: 1px solid #343740;
+      border-radius: 10px;
+    }
+
+    .stage-box small {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .stage-box strong {
+      display: block;
+      margin-top: 3px;
+      font-size: 15px;
+    }
+
+    @keyframes stageDrift {
+      from { transform: translate3d(-20px, -20px, 0); }
+      to { transform: translate3d(20px, 20px, 0); }
+    }
+
+    @keyframes stagePulse {
+      0%, 100% { transform: scale(0.88); opacity: 0.2; }
+      50% { transform: scale(1.08); opacity: 0.55; }
+    }
+
+    @keyframes eyeFlash {
+      0%, 100% { transform: scale(0.88); opacity: 0.12; }
+      50% { transform: scale(1.05); opacity: 0.42; }
+    }
+
     .display {
       min-height: 104px;
       display: grid;
@@ -229,47 +381,270 @@
       font-weight: 700;
     }
 
-    .reels {
+    .reel-labels {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 7px;
-      padding: 8px;
-      background: #050505;
-      border: 2px solid #555;
-      border-radius: 15px;
+      margin: 2px 8px 5px;
+      color: #d8d9df;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-align: center;
+    }
+
+    .reels {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 7px;
+      padding: 9px;
+      overflow: hidden;
+      background: linear-gradient(145deg, #08090c, #191b20 52%, #050506);
+      border: 2px solid #73757c;
+      border-radius: 17px;
+      box-shadow:
+        inset 0 0 0 2px #090a0c,
+        inset 0 0 20px rgba(255,255,255,0.06),
+        0 10px 28px rgba(0,0,0,0.4);
+    }
+
+    .reels::before {
+      content: "";
+      position: absolute;
+      z-index: 8;
+      left: 5px;
+      right: 5px;
+      top: 50%;
+      height: 3px;
+      transform: translateY(-1px);
+      pointer-events: none;
+      background: linear-gradient(90deg, transparent, #ff2d3d 8%, #ff8b95 50%, #ff2d3d 92%, transparent);
+      box-shadow: 0 0 8px #ff2537, 0 0 18px rgba(255,37,55,0.72);
+    }
+
+    .reels::after {
+      content: "中段有効ライン";
+      position: absolute;
+      z-index: 9;
+      right: 11px;
+      top: calc(50% - 18px);
+      padding: 2px 6px;
+      border-radius: 999px;
+      pointer-events: none;
+      color: #fff;
+      background: rgba(126, 10, 22, 0.82);
+      border: 1px solid rgba(255,120,130,0.8);
+      font-size: 8px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
     }
 
     .reel {
       overflow: hidden;
-      background: white;
+      background: #f5f6f8;
       color: #111;
-      border: 2px solid #777;
-      border-radius: 9px;
+      border: 2px solid #a9abb2;
+      border-radius: 10px;
+      box-shadow: inset 0 0 12px rgba(0,0,0,0.18);
     }
 
     .symbol {
-      height: 58px;
+      height: 66px;
       display: grid;
       place-items: center;
-      border-bottom: 1px solid #bbb;
-      font-size: 31px;
+      overflow: hidden;
+      border-bottom: 1px solid #bfc1c7;
+      background: linear-gradient(180deg, #ffffff, #eceef2);
       user-select: none;
     }
 
     .symbol:nth-child(2) {
-      height: 78px;
-      font-size: 42px;
-      font-weight: 800;
-      background: #fff;
+      height: 88px;
+      background: linear-gradient(180deg, #fff 0%, #f6f7f9 48%, #e6e8ed 100%);
+      box-shadow: inset 0 0 15px rgba(213,43,54,0.08);
     }
 
     .symbol:last-child {
       border-bottom: none;
     }
 
+    .symbol-card {
+      width: 92%;
+      height: 88%;
+      display: grid;
+      grid-template-rows: 1fr auto;
+      place-items: center;
+      padding: 3px 2px 2px;
+      border-radius: 9px;
+      line-height: 1;
+    }
+
+    .symbol-icon {
+      display: grid;
+      place-items: center;
+      min-height: 34px;
+      font-size: 30px;
+      filter: drop-shadow(0 2px 1px rgba(0,0,0,0.18));
+    }
+
+    .symbol:nth-child(2) .symbol-icon {
+      min-height: 48px;
+      font-size: 42px;
+    }
+
+    .symbol-label {
+      max-width: 100%;
+      overflow: hidden;
+      color: #30323a;
+      font-size: 7px;
+      font-weight: 950;
+      letter-spacing: 0.07em;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .symbol-mark {
+      display: grid;
+      place-items: center;
+      min-width: 44px;
+      min-height: 34px;
+      padding: 2px 7px;
+      border-radius: 8px;
+      font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+      font-size: 25px;
+      font-weight: 950;
+      letter-spacing: 0.02em;
+      transform: skew(-5deg);
+    }
+
+    .symbol:nth-child(2) .symbol-mark {
+      min-width: 58px;
+      min-height: 48px;
+      font-size: 34px;
+    }
+
+    .mark-replay {
+      color: white;
+      background: linear-gradient(180deg, #73c6ff, #0754dc 70%);
+      border: 2px solid #d9f1ff;
+      border-radius: 50% 18% 50% 18%;
+      box-shadow: inset 0 0 0 2px rgba(0,27,97,0.45), 0 2px 5px rgba(0,48,150,0.4);
+    }
+
+    .mark-kaku {
+      color: #fff1f3;
+      background: radial-gradient(circle at 35% 30%, #ff6272, #b00922 58%, #4f0010);
+      border: 2px solid #ff99a4;
+      box-shadow: 0 0 7px rgba(235,20,51,0.5);
+    }
+
+    .mark-ku {
+      color: white;
+      background: conic-gradient(from 45deg, #d79cff, #6f22ae, #ee77cd, #4e126f, #d79cff);
+      border: 2px solid #f0c5ff;
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(178,72,238,0.55);
+    }
+
+    .mark-bar {
+      color: #fff;
+      background: linear-gradient(180deg, #303238, #050505 55%, #24262b);
+      border: 2px solid #aeb1b9;
+      box-shadow: inset 0 0 0 1px #000, 0 2px 5px rgba(0,0,0,0.45);
+      letter-spacing: 0.09em;
+    }
+
+    .mark-seven {
+      color: #fff;
+      background: linear-gradient(135deg, #ffffff, #9ba9b8 52%, #eef5ff);
+      border: 2px solid #ffffff;
+      text-shadow: 0 1px 2px #263342, 0 0 4px #28435f;
+      box-shadow: inset 0 0 0 2px #667789, 0 2px 6px rgba(25,50,80,0.42);
+    }
+
+    .symbol-card.is-blank {
+      opacity: 0.28;
+    }
+
+    .symbol-card.is-blank .symbol-icon {
+      font-size: 20px;
+      filter: none;
+    }
+
+    .reel.spinning .symbol-card {
+      transform: translateY(2px) scaleY(1.05);
+      opacity: 0.54;
+      filter: blur(1.7px);
+    }
+
+    .aim-guide {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin: 8px 0 3px;
+      color: #e7e8ed;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .aim-bar-mini {
+      display: inline-grid;
+      place-items: center;
+      min-width: 46px;
+      height: 24px;
+      padding: 0 6px;
+      color: white;
+      background: linear-gradient(#33363c, #050505);
+      border: 1px solid #b0b3ba;
+      border-radius: 5px;
+      font-family: Impact, sans-serif;
+      letter-spacing: 0.08em;
+    }
+
+    .symbol-legend {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 6px;
+      margin-top: 12px;
+      padding: 10px;
+      background: rgba(23,25,31,0.95);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    .legend-item {
+      display: grid;
+      place-items: center;
+      min-height: 48px;
+      padding: 5px 2px;
+      color: #dddfe5;
+      background: #101217;
+      border: 1px solid #343740;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 9px;
+      font-weight: 800;
+    }
+
+    .legend-item b {
+      display: block;
+      margin-bottom: 3px;
+      font-size: 19px;
+      line-height: 1;
+    }
+
+    .legend-item b.text-mark {
+      min-width: 34px;
+      padding: 3px 5px;
+      color: white;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
     .reel.spinning {
-      opacity: 0.6;
-      filter: blur(1px);
+      opacity: 0.85;
     }
 
     .stop-buttons {
@@ -315,7 +690,7 @@
 
     .sub-controls {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, 1fr);
       gap: 8px;
       margin-top: 10px;
     }
@@ -356,7 +731,7 @@
 <body>
   <main class="app">
     <h1>東京喰種</h1>
-    <p class="version">スマスロシミュレーター Ver.0.5</p>
+    <p class="version">スマスロシミュレーター Ver.1.0</p>
 
     <section class="status">
       <div class="status-box">
@@ -464,11 +839,46 @@
       </div>
     </section>
 
+    <section class="stage-panel" id="stagePanel">
+      <div class="stage-title">
+        <span>演出ステージ</span>
+        <span class="stage-badge" id="stageBadge">通常</span>
+      </div>
+
+      <div class="stage-visual" id="stageVisual" data-stage="normal">
+        <div>
+          <div class="stage-name" id="stageName">通常ステージ</div>
+          <div class="stage-sub" id="stageSub">静かな街を探索中</div>
+        </div>
+      </div>
+
+      <div class="stage-grid">
+        <div class="stage-box">
+          <small>前兆残り</small>
+          <strong id="stageGames">--</strong>
+        </div>
+        <div class="stage-box">
+          <small>期待度</small>
+          <strong id="stageChance">--</strong>
+        </div>
+        <div class="stage-box">
+          <small>赫眼</small>
+          <strong id="kakuganState">OFF</strong>
+        </div>
+      </div>
+    </section>
+
     <section class="display" id="message">
       レバーONでスタート
     </section>
 
-    <section class="reels" aria-label="3リール">
+    <div class="reel-labels" aria-hidden="true">
+      <span>左リール</span>
+      <span>中リール</span>
+      <span>右リール</span>
+    </div>
+
+    <section class="reels" aria-label="3リール・中段有効ライン">
       <div class="reel" id="reel0">
         <div class="symbol"></div>
         <div class="symbol"></div>
@@ -488,6 +898,23 @@
       </div>
     </section>
 
+    <div class="aim-guide">
+      <span>左リールは</span>
+      <span class="aim-bar-mini">BAR</span>
+      <span>を枠内に狙う</span>
+    </div>
+
+    <section class="symbol-legend" aria-label="図柄一覧">
+      <div class="legend-item"><b>🍒</b>チェリー</div>
+      <div class="legend-item"><b>🔔</b>ベル</div>
+      <div class="legend-item"><b>🍉</b>スイカ</div>
+      <div class="legend-item"><b class="text-mark mark-replay">R</b>リプレイ</div>
+      <div class="legend-item"><b class="text-mark mark-kaku">赫</b>赫図柄</div>
+      <div class="legend-item"><b class="text-mark mark-ku">喰</b>喰図柄</div>
+      <div class="legend-item"><b class="text-mark mark-bar">BAR</b>黒BAR</div>
+      <div class="legend-item"><b class="text-mark mark-seven">7</b>白7</div>
+    </section>
+
     <section class="stop-buttons">
       <button class="stop-button" id="stop0" disabled>左</button>
       <button class="stop-button" id="stop1" disabled>中</button>
@@ -499,15 +926,16 @@
     <section class="sub-controls">
       <button id="addCredit">クレジット＋50枚</button>
       <button id="testAt">ATを試す</button>
+      <button id="testStage">演出を試す</button>
       <button id="reset">最初から</button>
     </section>
 
     <section class="info">
-      <span class="bet-note">Ver.0.5：AT・残りゲーム数・AT獲得枚数を追加</span><br>
-      CZ成功後、次ゲームから30GのATへ突入<br>
-      AT中は役に応じて追加払い出しとゲーム数上乗せ<br>
-      「ATを試す」で動作確認可能<br>
-      ※抽選値・払い出し・AT仕様は現在テスト用
+      <span class="bet-note">Ver.1.0：図柄の見やすさを改善</span><br>
+      東京上空・精神世界・赫眼状態が通常時の抽選と連動<br>
+      専用図柄・中段ライン・BAR狙いガイド・図柄一覧を追加<br>
+      「演出を試す」で東京上空→精神世界→赫眼を確認可能<br>
+      ※図柄はオリジナルCSSデザインで構成
     </section>
   </main>
 
@@ -519,6 +947,11 @@
     const CZ_TARGET_POINTS = 100;
     const CZ_LENGTH = 8;
     const AT_START_GAMES = 30;
+    const STAGE_LABELS = {
+      normal: "通常",
+      sky: "東京上空",
+      mind: "精神世界"
+    };
 
     const reelData = [
       [
@@ -686,6 +1119,14 @@
     const atAddedText = document.getElementById("atAdded");
     const atPlayedText = document.getElementById("atPlayed");
     const atBar = document.getElementById("atBar");
+    const stagePanel = document.getElementById("stagePanel");
+    const stageBadge = document.getElementById("stageBadge");
+    const stageVisual = document.getElementById("stageVisual");
+    const stageName = document.getElementById("stageName");
+    const stageSub = document.getElementById("stageSub");
+    const stageGamesText = document.getElementById("stageGames");
+    const stageChanceText = document.getElementById("stageChance");
+    const kakuganStateText = document.getElementById("kakuganState");
 
     const stopButtons = [
       document.getElementById("stop0"),
@@ -718,6 +1159,13 @@
     let atSetCount = 0;
     let atLastAdded = 0;
 
+    let stageState = "normal";
+    let stageGamesLeft = 0;
+    let stageExpectation = 0;
+    let stageIsReal = false;
+    let kakuganGamesLeft = 0;
+    let stageTestStep = 0;
+
     function wrap(number, length) {
       return ((number % length) + length) % length;
     }
@@ -728,19 +1176,46 @@
       ) + minimum;
     }
 
+    function symbolMarkup(symbol) {
+      const symbolMap = {
+        "🍉": '<div class="symbol-card"><span class="symbol-icon">🍉</span><span class="symbol-label">WATERMELON</span></div>',
+        "🍒": '<div class="symbol-card"><span class="symbol-icon">🍒</span><span class="symbol-label">CHERRY</span></div>',
+        "🔔": '<div class="symbol-card"><span class="symbol-icon">🔔</span><span class="symbol-label">BELL</span></div>',
+        "🟦": '<div class="symbol-card"><span class="symbol-mark mark-replay">R</span><span class="symbol-label">REPLAY</span></div>',
+        "🟥": '<div class="symbol-card"><span class="symbol-mark mark-kaku">赫</span><span class="symbol-label">KAKU</span></div>',
+        "🌸": '<div class="symbol-card"><span class="symbol-mark mark-ku">喰</span><span class="symbol-label">GHOUL</span></div>',
+        "🐦‍⬛": '<div class="symbol-card"><span class="symbol-mark mark-bar">BAR</span><span class="symbol-label">BLACK BAR</span></div>',
+        "7️⃣": '<div class="symbol-card"><span class="symbol-mark mark-seven">7</span><span class="symbol-label">WHITE SEVEN</span></div>',
+        "⬜": '<div class="symbol-card is-blank"><span class="symbol-icon">◆</span><span class="symbol-label">BLANK</span></div>'
+      };
+
+      return symbolMap[symbol] ||
+        '<div class="symbol-card"><span class="symbol-icon">' + symbol + '</span></div>';
+    }
+
+    function drawSymbol(element, symbol) {
+      element.innerHTML = symbolMarkup(symbol);
+      element.dataset.symbol = symbol;
+      element.setAttribute("aria-label", symbol);
+    }
+
     function drawReel(index) {
       const reel = document.getElementById("reel" + index);
       const symbols = reel.querySelectorAll(".symbol");
       const data = reelData[index];
       const position = positions[index];
 
-      symbols[0].textContent =
-        data[wrap(position - 1, data.length)];
+      drawSymbol(
+        symbols[0],
+        data[wrap(position - 1, data.length)]
+      );
 
-      symbols[1].textContent = data[position];
+      drawSymbol(symbols[1], data[position]);
 
-      symbols[2].textContent =
-        data[wrap(position + 1, data.length)];
+      drawSymbol(
+        symbols[2],
+        data[wrap(position + 1, data.length)]
+      );
 
       reel.classList.toggle("spinning", !stopped[index]);
     }
@@ -773,10 +1248,158 @@
       lever.disabled = playing || credit < BET_PER_GAME;
     }
 
+    function clearStage() {
+      stageState = "normal";
+      stageGamesLeft = 0;
+      stageExpectation = 0;
+      stageIsReal = false;
+    }
+
+    function startStage(type, isReal, gamesLeft, expectation) {
+      stageState = type;
+      stageIsReal = isReal;
+      stageGamesLeft = gamesLeft;
+      stageExpectation = Math.max(1, Math.min(99, expectation));
+      updateStageDisplay();
+    }
+
+    function startKakugan(gamesLeft = 5) {
+      kakuganGamesLeft = Math.max(kakuganGamesLeft, gamesLeft);
+      updateStageDisplay();
+    }
+
+    function updateStageDisplay() {
+      const showStage = gameState === "normal";
+      stagePanel.classList.toggle("hidden", !showStage);
+
+      stageVisual.dataset.stage = stageState;
+      stageVisual.classList.toggle("kakugan", kakuganGamesLeft > 0);
+
+      const label = STAGE_LABELS[stageState] || "通常";
+      stageBadge.textContent = label;
+      stageGamesText.textContent =
+        stageState === "normal" ? "--" : stageGamesLeft + "G";
+      stageChanceText.textContent =
+        stageState === "normal" ? "--" : stageExpectation + "%";
+      kakuganStateText.textContent =
+        kakuganGamesLeft > 0 ? "ON 残" + kakuganGamesLeft + "G" : "OFF";
+
+      if (stageState === "sky") {
+        stageName.textContent = "東京上空";
+        stageSub.textContent = stageIsReal
+          ? "空気が変わる――本前兆の可能性大"
+          : "不穏な気配。CZへの道を探せ";
+      } else if (stageState === "mind") {
+        stageName.textContent = "精神世界";
+        stageSub.textContent = stageIsReal
+          ? "内なる声が近づく――決着は目前"
+          : "記憶の深層を進め";
+      } else {
+        stageName.textContent = kakuganGamesLeft > 0
+          ? "赫眼状態"
+          : "通常ステージ";
+        stageSub.textContent = kakuganGamesLeft > 0
+          ? "レア役のCZポイントと直撃率が上昇中"
+          : "静かな街を探索中";
+      }
+    }
+
+    function getStagePointMultiplier() {
+      let multiplier = 1;
+      if (stageState === "sky") multiplier *= 1.15;
+      if (stageState === "mind") multiplier *= 1.35;
+      if (kakuganGamesLeft > 0) multiplier *= 1.5;
+      return multiplier;
+    }
+
+    function getStageDirectMultiplier() {
+      let multiplier = 1;
+      if (stageState === "sky") multiplier *= 1.25;
+      if (stageState === "mind") multiplier *= 1.7;
+      if (kakuganGamesLeft > 0) multiplier *= 1.8;
+      return multiplier;
+    }
+
+    function maybeStartNormalStage(role) {
+      if (stageState !== "normal" || pendingCz) return "";
+
+      let chance = 0.015;
+      if (role.name === "チェリー") chance = 0.2;
+      if (role.name === "スイカ") chance = 0.28;
+      if (role.name === "赫図柄") chance = 0.52;
+      if (role.name === "喰図柄" || role.name === "白7") chance = 1;
+
+      chance *= modes[currentModeIndex].directMultiplier;
+      if (Math.random() >= Math.min(0.95, chance)) return "";
+
+      const mindChance =
+        role.name === "スイカ" ? 0.45 :
+        role.name === "赫図柄" ? 0.6 :
+        role.name === "喰図柄" || role.name === "白7" ? 0.75 : 0.25;
+      const type = Math.random() < mindChance ? "mind" : "sky";
+      const baseExpectation =
+        role.name === "赫図柄" ? 65 :
+        role.name === "喰図柄" || role.name === "白7" ? 92 :
+        role.name === "スイカ" ? 48 : 30;
+      const isReal = Math.random() < baseExpectation / 100;
+      const length = type === "mind"
+        ? randomInteger(4, 6)
+        : randomInteger(5, 8);
+
+      startStage(type, isReal, length, baseExpectation);
+      return "\n" + STAGE_LABELS[type] + "へ移行！";
+    }
+
+    function advanceStage(success) {
+      let result = "";
+
+      if (kakuganGamesLeft > 0) {
+        kakuganGamesLeft--;
+        if (kakuganGamesLeft === 0) {
+          result += "\n赫眼状態終了";
+        }
+      }
+
+      if (stageState === "normal") {
+        updateStageDisplay();
+        return result;
+      }
+
+      if (success) {
+        if (currentRole.name === "チェリー") stageExpectation += 8;
+        if (currentRole.name === "スイカ") stageExpectation += 12;
+        if (currentRole.name === "赫図柄") stageExpectation += 22;
+        if (currentRole.name === "喰図柄" || currentRole.name === "白7") {
+          stageExpectation = 99;
+          stageIsReal = true;
+        }
+        stageExpectation = Math.min(99, stageExpectation);
+      }
+
+      stageGamesLeft--;
+
+      if (stageGamesLeft <= 0) {
+        const hit = stageIsReal || Math.random() < stageExpectation / 140;
+        const finishedStage = STAGE_LABELS[stageState];
+        clearStage();
+
+        if (hit) {
+          pendingCz = true;
+          result += "\n" + finishedStage + "成功！次ゲームCZ";
+        } else {
+          result += "\n" + finishedStage + "終了…通常へ";
+        }
+      }
+
+      updateStageDisplay();
+      return result;
+    }
+
     function updateNormalDisplay() {
       const isAt = gameState === "at";
       normalPanel.classList.toggle("hidden", isAt);
       atPanel.classList.toggle("hidden", !isAt);
+      updateStageDisplay();
 
       if (isAt) {
         const maxForBar = Math.max(AT_START_GAMES, atGamesLeft);
@@ -820,6 +1443,15 @@
       } else if (pendingCz) {
         czInfoText.textContent = "次G突入";
         statusText.textContent = "CZ前兆";
+      } else if (stageState !== "normal") {
+        czInfoText.textContent =
+          STAGE_LABELS[stageState] + " 残" + stageGamesLeft + "G";
+        statusText.textContent = playing
+          ? STAGE_LABELS[stageState] + "回転中"
+          : STAGE_LABELS[stageState];
+      } else if (kakuganGamesLeft > 0) {
+        czInfoText.textContent = "赫眼 残" + kakuganGamesLeft + "G";
+        statusText.textContent = playing ? "赫眼回転中" : "赫眼状態";
       } else {
         czInfoText.textContent = "--";
         statusText.textContent = playing ? "回転中" : "通常時";
@@ -905,6 +1537,8 @@
     }
 
     function beginCz() {
+      clearStage();
+      kakuganGamesLeft = 0;
       gameState = "cz";
       pendingCz = false;
       czGamesLeft = CZ_LENGTH;
@@ -915,6 +1549,8 @@
     }
 
     function beginAt() {
+      clearStage();
+      kakuganGamesLeft = 0;
       gameState = "at";
       pendingAt = false;
       atGamesLeft = AT_START_GAMES;
@@ -1056,8 +1692,12 @@
     }
 
     function processNormalGame(success) {
+      const stageWasActive = stageState !== "normal";
+
       if (!success) {
-        return "CZポイント：取りこぼしで獲得なし";
+        let missResult = "CZポイント：取りこぼしで獲得なし";
+        missResult += advanceStage(false);
+        return missResult;
       }
 
       const mode = modes[currentModeIndex];
@@ -1066,7 +1706,9 @@
         currentRole.normalPoints[1]
       );
       const gainedPoints = Math.round(
-        basePoints * mode.pointMultiplier
+        basePoints *
+        mode.pointMultiplier *
+        getStagePointMultiplier()
       );
 
       czPoints = Math.min(
@@ -1076,7 +1718,9 @@
 
       const directChance = Math.min(
         1,
-        currentRole.directCzChance * mode.directMultiplier
+        currentRole.directCzChance *
+        mode.directMultiplier *
+        getStageDirectMultiplier()
       );
 
       const directHit = Math.random() < directChance;
@@ -1085,16 +1729,42 @@
       let result = "CZポイント：+" + gainedPoints + "pt";
 
       if (directHit || pointHit) {
-        pendingCz = true;
-        result += directHit
-          ? "\nレア役直撃でCZ当選！"
-          : "\n100pt到達でCZ当選！";
+        if (stageState === "normal") {
+          startStage(
+            Math.random() < 0.45 ? "mind" : "sky",
+            true,
+            randomInteger(3, 6),
+            95
+          );
+          result += directHit
+            ? "\n直撃当選！本前兆へ"
+            : "\n100pt到達！本前兆へ";
+        } else {
+          stageIsReal = true;
+          stageExpectation = 99;
+          result += "\n前兆が本前兆に昇格！";
+        }
       } else {
         const modeMessage = maybeChangeMode(currentRole);
+        if (modeMessage) result += "\n" + modeMessage;
 
-        if (modeMessage) {
-          result += "\n" + modeMessage;
+        if (!stageWasActive && stageState === "normal") {
+          result += maybeStartNormalStage(currentRole);
         }
+      }
+
+      if (
+        currentRole.name === "赫図柄" &&
+        Math.random() < 0.55
+      ) {
+        startKakugan(randomInteger(4, 7));
+        result += "\n赫眼状態突入！";
+      }
+
+      if (stageWasActive) {
+        result += advanceStage(true);
+      } else {
+        updateStageDisplay();
       }
 
       return result;
@@ -1242,6 +1912,30 @@
       updateCounters();
     }
 
+    function testStage() {
+      if (playing || gameState !== "normal") return;
+
+      stageTestStep = (stageTestStep + 1) % 4;
+
+      if (stageTestStep === 1) {
+        startStage("sky", false, 6, 35);
+        message.textContent = "演出テスト：東京上空（ガセ）";
+      } else if (stageTestStep === 2) {
+        startStage("mind", true, 5, 88);
+        message.textContent = "演出テスト：精神世界（本前兆）";
+      } else if (stageTestStep === 3) {
+        clearStage();
+        startKakugan(6);
+        message.textContent = "演出テスト：赫眼状態";
+      } else {
+        clearStage();
+        kakuganGamesLeft = 0;
+        message.textContent = "演出テスト終了：通常へ";
+      }
+
+      updateNormalDisplay();
+    }
+
     function resetGame() {
       timers.forEach(timer => {
         if (timer !== null) {
@@ -1281,6 +1975,10 @@
       atSetCount = 0;
       atLastAdded = 0;
 
+      clearStage();
+      kakuganGamesLeft = 0;
+      stageTestStep = 0;
+
       gamesText.textContent = "0G";
       message.textContent = "レバーONでスタート";
 
@@ -1314,6 +2012,10 @@
     document
       .getElementById("testAt")
       .addEventListener("click", testAt);
+
+    document
+      .getElementById("testStage")
+      .addEventListener("click", testStage);
 
     document
       .getElementById("reset")
