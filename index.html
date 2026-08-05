@@ -21,6 +21,7 @@
       --green: #5fe08a;
       --yellow: #ffd264;
       --blue: #67a7ff;
+      --purple: #c18cff;
     }
 
     * {
@@ -66,20 +67,23 @@
 
     .status,
     .counters,
-    .normal-grid {
+    .normal-grid,
+    .at-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 8px;
     }
 
     .counters,
-    .normal-panel {
+    .normal-panel,
+    .at-panel {
       margin-top: 8px;
     }
 
     .status-box,
     .counter-box,
-    .normal-box {
+    .normal-box,
+    .at-box {
       padding: 10px;
       text-align: center;
       background: var(--panel);
@@ -89,7 +93,8 @@
 
     .status-box small,
     .counter-box small,
-    .normal-box small {
+    .normal-box small,
+    .at-box small {
       display: block;
       color: var(--muted);
       font-size: 12px;
@@ -97,7 +102,8 @@
 
     .status-box strong,
     .counter-box strong,
-    .normal-box strong {
+    .normal-box strong,
+    .at-box strong {
       display: block;
       margin-top: 3px;
       font-size: 18px;
@@ -111,7 +117,8 @@
       color: #ff7b83;
     }
 
-    .normal-panel {
+    .normal-panel,
+    .at-panel {
       padding: 10px;
       background: rgba(23, 25, 31, 0.92);
       border: 1px solid var(--border);
@@ -160,6 +167,51 @@
       height: 100%;
       background: linear-gradient(90deg, #5d1c2c, #e93a50, #ffd264);
       transition: width 0.25s ease;
+    }
+
+    .at-panel {
+      border-color: #69498a;
+      background:
+        radial-gradient(circle at top right, rgba(193, 140, 255, 0.14), transparent 45%),
+        rgba(23, 25, 31, 0.94);
+    }
+
+    .at-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-weight: 800;
+    }
+
+    .at-badge {
+      padding: 5px 10px;
+      border-radius: 999px;
+      color: var(--purple);
+      background: #30243d;
+      border: 1px solid var(--purple);
+      font-size: 13px;
+    }
+
+    .at-track {
+      height: 12px;
+      overflow: hidden;
+      margin-top: 9px;
+      background: #090a0d;
+      border: 1px solid #554765;
+      border-radius: 999px;
+    }
+
+    .at-bar {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, #6932a3, #c18cff, #ffd264);
+      transition: width 0.25s ease;
+    }
+
+    .hidden {
+      display: none !important;
     }
 
     .display {
@@ -263,7 +315,7 @@
 
     .sub-controls {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(3, 1fr);
       gap: 8px;
       margin-top: 10px;
     }
@@ -276,6 +328,7 @@
       border: 1px solid #555;
       border-radius: 10px;
       font-weight: 700;
+      font-size: 13px;
     }
 
     .sub-controls button:active {
@@ -303,7 +356,7 @@
 <body>
   <main class="app">
     <h1>東京喰種</h1>
-    <p class="version">スマスロシミュレーター Ver.0.4</p>
+    <p class="version">スマスロシミュレーター Ver.0.5</p>
 
     <section class="status">
       <div class="status-box">
@@ -339,7 +392,7 @@
       </div>
     </section>
 
-    <section class="normal-panel">
+    <section class="normal-panel" id="normalPanel">
       <div class="normal-title">
         <span>通常時システム</span>
         <span class="mode-badge" id="modeBadge">通常A</span>
@@ -378,6 +431,39 @@
       </div>
     </section>
 
+    <section class="at-panel hidden" id="atPanel">
+      <div class="at-title">
+        <span>ATシステム</span>
+        <span class="at-badge" id="atBadge">AT 1セット目</span>
+      </div>
+
+      <div class="at-grid">
+        <div class="at-box">
+          <small>AT残り</small>
+          <strong id="atGamesLeft">30G</strong>
+        </div>
+
+        <div class="at-box">
+          <small>AT獲得</small>
+          <strong id="atCoins">0枚</strong>
+        </div>
+
+        <div class="at-box">
+          <small>今回の上乗せ</small>
+          <strong id="atAdded">+0G</strong>
+        </div>
+
+        <div class="at-box">
+          <small>AT消化</small>
+          <strong id="atPlayed">0G</strong>
+        </div>
+      </div>
+
+      <div class="at-track">
+        <div class="at-bar" id="atBar"></div>
+      </div>
+    </section>
+
     <section class="display" id="message">
       レバーONでスタート
     </section>
@@ -412,15 +498,16 @@
 
     <section class="sub-controls">
       <button id="addCredit">クレジット＋50枚</button>
-      <button id="reset">最初からやり直す</button>
+      <button id="testAt">ATを試す</button>
+      <button id="reset">最初から</button>
     </section>
 
     <section class="info">
-      <span class="bet-note">Ver.0.4：通常モード・CZポイント・CZ抽選を追加</span><br>
-      レア役でCZポイントを獲得<br>
-      100pt到達、またはレア役の直撃抽選でCZへ<br>
-      CZは8G、100pt到達で成功<br>
-      ※モード名・抽選値・払い出しは現在テスト用
+      <span class="bet-note">Ver.0.5：AT・残りゲーム数・AT獲得枚数を追加</span><br>
+      CZ成功後、次ゲームから30GのATへ突入<br>
+      AT中は役に応じて追加払い出しとゲーム数上乗せ<br>
+      「ATを試す」で動作確認可能<br>
+      ※抽選値・払い出し・AT仕様は現在テスト用
     </section>
   </main>
 
@@ -431,6 +518,7 @@
     const STARTING_CREDIT = 50;
     const CZ_TARGET_POINTS = 100;
     const CZ_LENGTH = 8;
+    const AT_START_GAMES = 30;
 
     const reelData = [
       [
@@ -461,7 +549,9 @@
         payout: 9,
         normalPoints: [0, 2],
         directCzChance: 0,
-        czPower: 6
+        czPower: 6,
+        atExtra: 6,
+        atAddGames: 0
       },
       {
         name: "リプレイ",
@@ -470,7 +560,9 @@
         payout: 3,
         normalPoints: [0, 1],
         directCzChance: 0,
-        czPower: 4
+        czPower: 4,
+        atExtra: 3,
+        atAddGames: 0
       },
       {
         name: "チェリー",
@@ -479,7 +571,9 @@
         payout: 2,
         normalPoints: [10, 20],
         directCzChance: 0.05,
-        czPower: 22
+        czPower: 22,
+        atExtra: 8,
+        atAddGames: 2
       },
       {
         name: "スイカ",
@@ -488,7 +582,9 @@
         payout: 4,
         normalPoints: [15, 30],
         directCzChance: 0.1,
-        czPower: 28
+        czPower: 28,
+        atExtra: 11,
+        atAddGames: 3
       },
       {
         name: "赫図柄",
@@ -497,7 +593,9 @@
         payout: 15,
         normalPoints: [30, 50],
         directCzChance: 0.25,
-        czPower: 45
+        czPower: 45,
+        atExtra: 20,
+        atAddGames: 5
       },
       {
         name: "喰図柄",
@@ -506,7 +604,9 @@
         payout: 15,
         normalPoints: [100, 100],
         directCzChance: 1,
-        czPower: 100
+        czPower: 100,
+        atExtra: 35,
+        atAddGames: 10
       },
       {
         name: "白7",
@@ -515,7 +615,9 @@
         payout: 15,
         normalPoints: [100, 100],
         directCzChance: 1,
-        czPower: 100
+        czPower: 100,
+        atExtra: 85,
+        atAddGames: 20
       },
       {
         name: "ハズレ",
@@ -524,7 +626,9 @@
         payout: 0,
         normalPoints: [0, 0],
         directCzChance: 0,
-        czPower: 0
+        czPower: 0,
+        atExtra: 0,
+        atAddGames: 0
       }
     ];
 
@@ -574,6 +678,14 @@
     const modeGamesText = document.getElementById("modeGames");
     const pointPercentText = document.getElementById("pointPercent");
     const pointBar = document.getElementById("pointBar");
+    const normalPanel = document.getElementById("normalPanel");
+    const atPanel = document.getElementById("atPanel");
+    const atBadge = document.getElementById("atBadge");
+    const atGamesLeftText = document.getElementById("atGamesLeft");
+    const atCoinsText = document.getElementById("atCoins");
+    const atAddedText = document.getElementById("atAdded");
+    const atPlayedText = document.getElementById("atPlayed");
+    const atBar = document.getElementById("atBar");
 
     const stopButtons = [
       document.getElementById("stop0"),
@@ -598,6 +710,13 @@
     let czCount = 0;
     let czGamesLeft = 0;
     let czBattlePoints = 0;
+
+    let pendingAt = false;
+    let atGamesLeft = 0;
+    let atCoins = 0;
+    let atPlayedGames = 0;
+    let atSetCount = 0;
+    let atLastAdded = 0;
 
     function wrap(number, length) {
       return ((number % length) + length) % length;
@@ -655,6 +774,26 @@
     }
 
     function updateNormalDisplay() {
+      const isAt = gameState === "at";
+      normalPanel.classList.toggle("hidden", isAt);
+      atPanel.classList.toggle("hidden", !isAt);
+
+      if (isAt) {
+        const maxForBar = Math.max(AT_START_GAMES, atGamesLeft);
+        const percent = Math.max(0, Math.min(100,
+          atGamesLeft / maxForBar * 100
+        ));
+
+        atBadge.textContent = "AT " + atSetCount + "セット目";
+        atGamesLeftText.textContent = atGamesLeft + "G";
+        atCoinsText.textContent = atCoins + "枚";
+        atAddedText.textContent = "+" + atLastAdded + "G";
+        atPlayedText.textContent = atPlayedGames + "G";
+        atBar.style.width = percent + "%";
+        statusText.textContent = playing ? "AT回転中" : "AT中";
+        return;
+      }
+
       const mode = modes[currentModeIndex];
       const displayedPoints = Math.min(czPoints, CZ_TARGET_POINTS);
       const percent = Math.floor(
@@ -674,7 +813,10 @@
       if (gameState === "cz") {
         czInfoText.textContent =
           "残" + czGamesLeft + "G / " + czBattlePoints + "pt";
-        statusText.textContent = "CZ中";
+        statusText.textContent = playing ? "CZ回転中" : "CZ中";
+      } else if (pendingAt) {
+        czInfoText.textContent = "AT次G";
+        statusText.textContent = "AT準備";
       } else if (pendingCz) {
         czInfoText.textContent = "次G突入";
         statusText.textContent = "CZ前兆";
@@ -772,6 +914,17 @@
       updateNormalDisplay();
     }
 
+    function beginAt() {
+      gameState = "at";
+      pendingAt = false;
+      atGamesLeft = AT_START_GAMES;
+      atCoins = 0;
+      atPlayedGames = 0;
+      atLastAdded = 0;
+      atSetCount++;
+      updateNormalDisplay();
+    }
+
     function startGame() {
       if (playing) {
         return;
@@ -784,7 +937,9 @@
         return;
       }
 
-      if (pendingCz) {
+      if (pendingAt) {
+        beginAt();
+      } else if (pendingCz) {
         beginCz();
       }
 
@@ -805,7 +960,9 @@
       message.textContent =
         gameState === "cz"
           ? "CZ中：左リールから停止"
-          : "左リールから停止";
+          : gameState === "at"
+            ? "AT中：左リールから停止"
+            : "左リールから停止";
 
       stopButtons[0].disabled = false;
       stopButtons[1].disabled = true;
@@ -954,8 +1111,9 @@
       let result = "CZ獲得：+" + gained + "pt";
 
       if (czBattlePoints >= CZ_TARGET_POINTS) {
-        result += "\nCZ成功！AT当選（AT処理は次版）";
+        result += "\nCZ成功！次ゲームからAT！";
         gameState = "normal";
+        pendingAt = true;
         czGamesLeft = 0;
         czBattlePoints = 0;
         currentModeIndex = selectModeIndex();
@@ -978,21 +1136,63 @@
       return result;
     }
 
+    function processAtGame(success) {
+      atGamesLeft--;
+      atPlayedGames++;
+
+      atLastAdded = success ? currentRole.atAddGames : 0;
+      atGamesLeft += atLastAdded;
+      atCoins += lastPayout;
+
+      let result =
+        "AT獲得：" + lastPayout + "枚" +
+        "\n残り" + atGamesLeft + "G";
+
+      if (atLastAdded > 0) {
+        result += " / +" + atLastAdded + "G上乗せ！";
+      }
+
+      if (atGamesLeft <= 0) {
+        const finishedCoins = atCoins;
+        result =
+          "AT終了！\nAT獲得：" + finishedCoins + "枚" +
+          " / 消化：" + atPlayedGames + "G";
+
+        gameState = "normal";
+        currentModeIndex = selectModeIndex();
+        modeGames = 0;
+        czPoints = 0;
+        atGamesLeft = 0;
+      }
+
+      return result;
+    }
+
     function finishGame() {
       const line = getMiddleLine();
       const success = roleWasDisplayed(line);
 
-      lastPayout = success ? currentRole.payout : 0;
+      const basePayout = success ? currentRole.payout : 0;
+      const atExtra =
+        gameState === "at" && success
+          ? currentRole.atExtra
+          : 0;
+
+      lastPayout = basePayout + atExtra;
       credit += lastPayout;
       totalOut += lastPayout;
 
-      const systemMessage =
-        gameState === "cz"
-          ? processCzGame(success)
-          : processNormalGame(success);
+      let systemMessage;
+
+      if (gameState === "cz") {
+        systemMessage = processCzGame(success);
+      } else if (gameState === "at") {
+        systemMessage = processAtGame(success);
+      } else {
+        systemMessage = processNormalGame(success);
+      }
 
       playing = false;
-      statusText.textContent = "停止";
 
       if (
         currentRole.name !== "ハズレ" &&
@@ -1029,6 +1229,19 @@
       updateCounters();
     }
 
+    function testAt() {
+      if (playing) {
+        return;
+      }
+
+      pendingCz = false;
+      pendingAt = false;
+      beginAt();
+      message.textContent =
+        "ATテスト開始！\n30Gを遊んで動作確認してください";
+      updateCounters();
+    }
+
     function resetGame() {
       timers.forEach(timer => {
         if (timer !== null) {
@@ -1061,6 +1274,13 @@
       czGamesLeft = 0;
       czBattlePoints = 0;
 
+      pendingAt = false;
+      atGamesLeft = 0;
+      atCoins = 0;
+      atPlayedGames = 0;
+      atSetCount = 0;
+      atLastAdded = 0;
+
       gamesText.textContent = "0G";
       message.textContent = "レバーONでスタート";
 
@@ -1090,6 +1310,10 @@
     document
       .getElementById("addCredit")
       .addEventListener("click", addCredit);
+
+    document
+      .getElementById("testAt")
+      .addEventListener("click", testAt);
 
     document
       .getElementById("reset")
