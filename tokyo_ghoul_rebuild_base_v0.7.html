@@ -1,0 +1,3197 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#08090d">
+  <title>L東京喰種 再構築土台 Ver.0.7</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #08090d;
+      --panel: #151821;
+      --panel-2: #1e222d;
+      --line: #3a4050;
+      --text: #f7f7fa;
+      --muted: #a8adba;
+      --red: #cc1835;
+      --red-dark: #6f0d1d;
+      --green: #63e69b;
+      --yellow: #ffd36a;
+      --blue: #61a7ff;
+      --purple: #bc7cff;
+    }
+
+    * { box-sizing: border-box; }
+    html { background: var(--bg); }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 50% -10%, rgba(147, 13, 38, .30), transparent 38%),
+        linear-gradient(180deg, #10070b, var(--bg) 36%);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button, select, input { font: inherit; }
+    button { touch-action: manipulation; }
+
+    .app {
+      width: min(100%, 680px);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding:
+        max(18px, env(safe-area-inset-top))
+        14px
+        max(36px, env(safe-area-inset-bottom));
+    }
+
+    .title {
+      text-align: center;
+      margin-bottom: 12px;
+    }
+
+    .title h1 {
+      margin: 0;
+      font-size: clamp(27px, 8vw, 42px);
+      letter-spacing: .04em;
+    }
+
+    .title p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .notice {
+      margin: 12px 0;
+      padding: 13px;
+      border: 1px solid #8e6b1e;
+      border-radius: 14px;
+      background: rgba(104, 75, 12, .27);
+      color: #ffe8a6;
+      line-height: 1.55;
+    }
+
+    .notice strong { color: #fff3c8; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .stat, .panel {
+      background: rgba(21, 24, 33, .96);
+      border: 1px solid var(--line);
+      border-radius: 15px;
+    }
+
+    .stat {
+      min-height: 82px;
+      display: grid;
+      place-items: center;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .stat small {
+      display: block;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 19px;
+      overflow-wrap: anywhere;
+    }
+
+    .panel {
+      margin-top: 10px;
+      padding: 14px;
+    }
+
+    .panel h2 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+
+    .scene {
+      min-height: 128px;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      text-align: center;
+      border: 1px solid #7a2436;
+      border-radius: 16px;
+      background:
+        linear-gradient(135deg, rgba(86, 12, 29, .74), rgba(14, 17, 24, .96));
+      margin-top: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .scene::before {
+      content: "";
+      position: absolute;
+      inset: -60%;
+      background:
+        conic-gradient(from 110deg, transparent, rgba(255, 255, 255, .05), transparent 18%);
+      animation: sweep 9s linear infinite;
+    }
+
+    @keyframes sweep { to { transform: rotate(360deg); } }
+
+    .scene-content { position: relative; z-index: 1; }
+
+    .phase-name {
+      font-size: clamp(25px, 7vw, 40px);
+      font-weight: 900;
+      letter-spacing: .04em;
+    }
+
+    .phase-detail {
+      margin-top: 7px;
+      color: #d7d9e1;
+      white-space: pre-line;
+      line-height: 1.5;
+    }
+
+    .reel-note {
+      color: var(--yellow);
+      font-size: 13px;
+      line-height: 1.5;
+      margin-bottom: 9px;
+    }
+
+    .reel-frame {
+      position: relative;
+      padding: 9px;
+      background: linear-gradient(145deg, #4f5157, #111218 28%, #050608 70%, #666970);
+      border: 2px solid #747780;
+      border-radius: 18px;
+      box-shadow: inset 0 0 0 3px #0a0a0c;
+    }
+
+    .reels {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 7px;
+      overflow: hidden;
+      border-radius: 11px;
+    }
+
+    .reel {
+      background: #f8f8fa;
+      border: 2px solid #8c8e94;
+      border-radius: 9px;
+      overflow: hidden;
+      color: #121318;
+      transition: filter .15s, opacity .15s;
+    }
+
+    .reel.spinning {
+      filter: blur(1.2px);
+      opacity: .72;
+    }
+
+    .cell {
+      height: 68px;
+      display: grid;
+      place-items: center;
+      border-bottom: 1px solid #b9bbc1;
+      background: linear-gradient(180deg, #fff, #e9eaee);
+      font-weight: 900;
+      position: relative;
+    }
+
+    .cell:last-child { border-bottom: 0; }
+
+    .cell.active {
+      background: linear-gradient(180deg, #fff7f8, #ffe5e9);
+    }
+
+    .cell.diag {
+      box-shadow: inset 0 0 0 3px rgba(204, 24, 53, .68);
+    }
+
+    .payline {
+      position: absolute;
+      left: 4px;
+      right: 4px;
+      top: 50%;
+      border-top: 2px solid rgba(255, 32, 65, .82);
+      pointer-events: none;
+      z-index: 3;
+      filter: drop-shadow(0 0 4px #f22);
+    }
+
+    .sym {
+      min-width: 58px;
+      max-width: 96%;
+      padding: 6px 7px;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 14px;
+      letter-spacing: .02em;
+      border: 2px solid #3f424a;
+      background: #d9dbe1;
+    }
+
+    .sym.bar {
+      color: #fff;
+      background: linear-gradient(#25262a, #030304);
+      border-color: #9d9fa7;
+      letter-spacing: .14em;
+    }
+
+    .sym.watermelon {
+      color: #073e22;
+      background: linear-gradient(#b8ffca, #42c56a);
+      border-color: #16763a;
+    }
+
+    .sym.replay {
+      color: white;
+      background: linear-gradient(#64b1ff, #0753d4);
+      border-color: #163f91;
+      font-size: 11px;
+    }
+
+    .sym.cherry {
+      color: #fff;
+      background: linear-gradient(#ff667b, #a80022);
+      border-color: #620016;
+    }
+
+    .sym.bell {
+      color: #302100;
+      background: linear-gradient(#fff08c, #d8a400);
+      border-color: #755600;
+    }
+
+    .sym.kaku {
+      color: #fff;
+      background: linear-gradient(#f4434f, #6d0010);
+      border-color: #44000b;
+      font-size: 21px;
+    }
+
+    .sym.eat {
+      color: #fff;
+      background: linear-gradient(#9b5be5, #32135d);
+      border-color: #250946;
+      font-size: 21px;
+    }
+
+    .sym.blank {
+      color: #6e7179;
+      background: #eaebee;
+      border-style: dashed;
+      font-weight: 700;
+    }
+
+    .control-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .btn {
+      min-height: 49px;
+      padding: 9px;
+      border: 1px solid #525868;
+      border-radius: 12px;
+      color: var(--text);
+      background: var(--panel-2);
+      font-weight: 800;
+    }
+
+    .btn:active { transform: scale(.98); }
+
+    .btn.primary {
+      background: linear-gradient(#da2945, #741023);
+      border-color: #ff657b;
+    }
+
+    .btn.blue {
+      background: linear-gradient(#316fbe, #173763);
+      border-color: #6eabf5;
+    }
+
+    .btn.gold {
+      color: #1f1600;
+      background: linear-gradient(#ffe58b, #b98808);
+      border-color: #ffe8a6;
+    }
+
+    .btn.danger {
+      background: #3a1820;
+      border-color: #8e3446;
+    }
+
+    .btn:disabled {
+      opacity: .35;
+      transform: none;
+    }
+
+    .wide { grid-column: 1 / -1; }
+
+    .subheading {
+      margin: 15px 0 8px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .04em;
+    }
+
+    .debug-line {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 7px;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #303542;
+    }
+
+    .debug-line:last-child { border-bottom: 0; }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 32px;
+      padding: 5px 9px;
+      border: 1px solid #555b69;
+      border-radius: 999px;
+      background: #242833;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .log {
+      max-height: 260px;
+      overflow: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px;
+      line-height: 1.55;
+      background: #090a0e;
+      border-radius: 11px;
+      padding: 10px;
+      border: 1px solid #30343e;
+    }
+
+    .log-entry {
+      padding: 4px 0;
+      border-bottom: 1px dashed #282c35;
+    }
+
+    details {
+      margin-top: 10px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(21, 24, 33, .96);
+      overflow: hidden;
+    }
+
+    summary {
+      padding: 13px;
+      cursor: pointer;
+      font-weight: 900;
+    }
+
+    .details-body {
+      padding: 0 13px 13px;
+      color: #d8dae2;
+      line-height: 1.6;
+    }
+
+    .details-body ul {
+      margin: 4px 0 0;
+      padding-left: 20px;
+    }
+
+    .details-body li { margin: 6px 0; }
+
+    .source-link {
+      display: block;
+      color: #8dbdff;
+      overflow-wrap: anywhere;
+      margin: 7px 0;
+    }
+
+    .ok { color: var(--green); }
+    .warn { color: var(--yellow); }
+    .muted { color: var(--muted); }
+
+
+    .setup-box {
+      margin-top: 9px;
+      padding: 11px;
+      border: 1px solid #414858;
+      border-radius: 12px;
+      background: #10131a;
+    }
+
+    .number-row {
+      display: grid;
+      grid-template-columns: 1fr 105px;
+      gap: 8px;
+      align-items: center;
+      margin-top: 8px;
+    }
+
+    .number-row input {
+      width: 100%;
+      min-height: 44px;
+      padding: 8px;
+      color: #fff;
+      background: #080a0f;
+      border: 1px solid #555c6b;
+      border-radius: 9px;
+      text-align: center;
+      font-weight: 800;
+    }
+
+    .selected-btn {
+      outline: 3px solid #ffd36a;
+      box-shadow: 0 0 12px rgba(255, 211, 106, .45);
+    }
+
+    @media (max-width: 390px) {
+      .cell { height: 61px; }
+      .sym { min-width: 50px; font-size: 12px; }
+      .sym.replay { font-size: 9px; }
+    }
+
+    .bites-table-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 7px;
+      margin-top: 8px;
+    }
+
+    .reward-track {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 5px;
+      margin-top: 9px;
+    }
+
+    .reward-step {
+      min-height: 48px;
+      display: grid;
+      place-items: center;
+      padding: 5px;
+      border: 1px solid #4a5060;
+      border-radius: 9px;
+      background: #1b1f29;
+      color: #cfd3dc;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .reward-step.current {
+      border-color: #ffda75;
+      background: linear-gradient(#5d4916, #241a03);
+      color: #fff2b7;
+      box-shadow: 0 0 12px rgba(255, 210, 90, .34);
+    }
+
+    .reward-step.past {
+      border-color: #4f8b67;
+      color: #8ff1b5;
+    }
+
+    .bites-summary {
+      margin-top: 10px;
+      padding: 11px;
+      border: 1px solid #765b19;
+      border-radius: 12px;
+      background: rgba(80, 58, 10, .28);
+      color: #ffe7a1;
+      line-height: 1.55;
+    }
+
+    .quick-panel {
+      position: sticky;
+      bottom: calc(8px + env(safe-area-inset-bottom));
+      z-index: 20;
+      margin-top: 10px;
+      padding: 13px;
+      border: 1px solid #9b3048;
+      border-radius: 16px;
+      background: rgba(13, 15, 21, .94);
+      box-shadow: 0 12px 34px rgba(0, 0, 0, .46), 0 0 18px rgba(204, 24, 53, .14);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    .quick-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 9px;
+    }
+
+    .quick-head h2 {
+      margin: 0;
+      font-size: 17px;
+    }
+
+    .quick-badge {
+      flex: 0 0 auto;
+      padding: 4px 8px;
+      border: 1px solid #6d7381;
+      border-radius: 999px;
+      background: #252a35;
+      color: #dfe3ec;
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .quick-action-text {
+      min-height: 38px;
+      display: grid;
+      align-items: center;
+      margin-bottom: 9px;
+      color: #f4f5f8;
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1.45;
+    }
+
+    .quick-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .quick-grid.single {
+      grid-template-columns: 1fr;
+    }
+
+    .quick-btn {
+      min-height: 58px;
+      border-radius: 14px;
+      font-size: 15px;
+    }
+
+    .quick-note {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    @media (max-width: 430px) {
+      .bites-table-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .reward-step { min-height: 43px; font-size: 10px; }
+      .quick-panel { bottom: calc(5px + env(safe-area-inset-bottom)); }
+      .quick-btn { min-height: 54px; font-size: 14px; }
+    }
+
+
+    .normal-auto-panel {
+      border-color: #7d2c42;
+      background:
+        linear-gradient(180deg, rgba(75, 12, 29, .26), rgba(21, 24, 33, .97));
+    }
+
+    .normal-settings {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .field {
+      display: grid;
+      gap: 5px;
+    }
+
+    .field label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .field select,
+    .field input[type="number"] {
+      width: 100%;
+      min-height: 44px;
+      padding: 8px;
+      color: #fff;
+      background: #080a0f;
+      border: 1px solid #555c6b;
+      border-radius: 9px;
+      font-weight: 800;
+    }
+
+    .toggle-row {
+      grid-column: 1 / -1;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 9px 11px;
+      border: 1px solid #444b59;
+      border-radius: 10px;
+      background: #10131a;
+    }
+
+    .toggle-row input {
+      width: 24px;
+      height: 24px;
+    }
+
+    .normal-machine-controls {
+      display: grid;
+      grid-template-columns: 1.25fr repeat(3, minmax(0, 1fr));
+      gap: 7px;
+      margin-top: 10px;
+    }
+
+    .lever-btn {
+      background: linear-gradient(#e22c49, #6d0d20);
+      border-color: #ff6b82;
+      font-size: 16px;
+    }
+
+    .stop-btn {
+      background: linear-gradient(#343946, #171a22);
+      border-color: #6c7382;
+    }
+
+    .stop-btn.stopped {
+      background: linear-gradient(#365745, #17271e);
+      border-color: #69d493;
+      color: #baffd2;
+    }
+
+    .normal-result {
+      margin-top: 10px;
+      padding: 11px;
+      border: 1px solid #454b59;
+      border-radius: 11px;
+      background: #0c0f15;
+      line-height: 1.55;
+    }
+
+    .normal-result strong {
+      color: #ffe59a;
+    }
+
+    .normal-mini-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .normal-mini {
+      padding: 8px 5px;
+      border: 1px solid #3b414e;
+      border-radius: 9px;
+      background: #171b23;
+      text-align: center;
+      font-size: 11px;
+    }
+
+    .normal-mini b {
+      display: block;
+      margin-top: 4px;
+      font-size: 13px;
+    }
+
+    .sym.chance {
+      color: #fff;
+      background: linear-gradient(#f08d3a, #8b2d05);
+      border-color: #672000;
+      font-size: 11px;
+    }
+
+    @media (max-width: 430px) {
+      .normal-machine-controls { grid-template-columns: 1fr repeat(3, .72fr); }
+      .normal-machine-controls .btn { min-height: 54px; padding: 6px 3px; font-size: 12px; }
+      .lever-btn { font-size: 14px !important; }
+      .normal-mini-grid { grid-template-columns: 1fr; }
+    }
+
+  </style>
+</head>
+
+<body>
+  <main class="app">
+    <header class="title">
+      <h1>L 東京喰種</h1>
+      <p>再構築土台 Ver.0.7 — 通常時AUTO試作版</p>
+    </header>
+
+    <section class="notice">
+      <strong>この版は「正しい土台」を作るための状態遷移テストです。</strong><br>
+      Ver.0.7では通常時AUTOに加えて、2種類のCZを8G間自動進行し、公開されている総合期待度を基準に成功・失敗から次フェーズまで自動で進めます。成立役別の正確な内部当選率は未公開のため、役表示と当否抽選は分離した検証用再現です。実リール配列と滑り制御はまだ未投入です。
+    </section>
+
+    <section class="grid">
+      <div class="stat">
+        <div>
+          <small>現在フェーズ</small>
+          <strong id="phaseStat">通常時</strong>
+        </div>
+      </div>
+      <div class="stat">
+        <div>
+          <small>実ゲーム数</small>
+          <strong id="realGamesStat">0G</strong>
+        </div>
+      </div>
+      <div class="stat">
+        <div>
+          <small>液晶カウンタ</small>
+          <strong id="lcdCounterStat">0</strong>
+        </div>
+      </div>
+      <div class="stat">
+        <div>
+          <small>通常時の状態</small>
+          <strong id="normalStateStat">通常</strong>
+        </div>
+      </div>
+      <div class="stat">
+        <div>
+          <small>通常時モード</small>
+          <strong id="normalModeStat">未抽選</strong>
+        </div>
+      </div>
+      <div class="stat">
+        <div>
+          <small>AT対戦相手</small>
+          <strong id="opponentStat">—</strong>
+        </div>
+      </div>
+      <div class="stat">
+        <div>
+          <small>赫眼状態</small>
+          <strong id="kakuganStat">OFF</strong>
+        </div>
+      </div>
+      <div class="stat">
+        <div>
+          <small>状態残り</small>
+          <strong id="normalStateTimerStat">—</strong>
+        </div>
+      </div>
+      <div class="stat">
+        <div>
+          <small>直近の成立役</small>
+          <strong id="lastNormalRoleStat">—</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="scene">
+      <div class="scene-content">
+        <div class="phase-name" id="phaseName">通常時</div>
+        <div class="phase-detail" id="phaseDetail">通常時AUTO待機中。
+LEVER ONで小役抽選からリール停止まで進めます。</div>
+      </div>
+    </section>
+
+    <section class="quick-panel" aria-label="かんたん進行">
+      <div class="quick-head">
+        <h2>かんたん進行</h2>
+        <span class="quick-badge" id="quickPhaseBadge">通常時</span>
+      </div>
+      <div class="quick-action-text" id="quickActionText" aria-live="polite">
+        現在のフェーズに合わせて、次に押すボタンが変わります。
+      </div>
+      <div class="quick-grid" id="quickGrid">
+        <button class="btn primary quick-btn" id="smartAdvanceButton">通常AUTOを1G進める</button>
+        <button class="btn blue quick-btn" id="fastForwardButton">通常時を10Gまとめる</button>
+      </div>
+      <div class="quick-note">
+        ゲーム数消化など確定している部分だけ自動化します。未確認の抽選結果を勝手に決める場面では停止します。
+      </div>
+    </section>
+
+
+    <section class="panel normal-auto-panel">
+      <h2>通常時AUTO試作</h2>
+      <div class="reel-note">
+        LEVERで小役を抽選し、AUTO STOPがONなら3リール停止まで自動で進みます。
+        小役確率・状態昇格・スイカ加算・赫眼保証G数は公開値を使用。中間ゾーンの当選率と高確転落は未公開のため暫定処理です。
+      </div>
+
+      <div class="normal-settings">
+        <div class="field">
+          <label for="settingSelect">設定</label>
+          <select id="settingSelect">
+            <option value="1">設定1</option>
+            <option value="2">設定2</option>
+            <option value="3">設定3</option>
+            <option value="4">設定4</option>
+            <option value="5">設定5</option>
+            <option value="6">設定6</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="normalModeSelect">通常時モード</label>
+          <select id="normalModeSelect">
+            <option value="通常A">通常A</option>
+            <option value="通常B">通常B</option>
+            <option value="通常C">通常C</option>
+            <option value="チャンス">チャンス</option>
+            <option value="天国準備">天国準備</option>
+            <option value="天国">天国</option>
+            <option value="朝一特殊">朝一特殊</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="highHoldInput">高確保持G数（暫定）</label>
+          <input id="highHoldInput" type="number" min="1" max="99" value="20" inputmode="numeric">
+        </div>
+        <div class="field">
+          <label>モード天井</label>
+          <div class="pill" id="modeCeilingDisplay">600G+α</div>
+        </div>
+        <label class="toggle-row">
+          <span><strong>AUTO STOP</strong><br><span class="muted">LEVERだけで3リール停止まで進行</span></span>
+          <input id="autoStopToggle" type="checkbox" checked>
+        </label>
+      </div>
+
+      <div class="normal-machine-controls">
+        <button class="btn lever-btn" id="normalLever">LEVER ON</button>
+        <button class="btn stop-btn" id="normalStopLeft" disabled>左STOP</button>
+        <button class="btn stop-btn" id="normalStopMiddle" disabled>中STOP</button>
+        <button class="btn stop-btn" id="normalStopRight" disabled>右STOP</button>
+      </div>
+
+      <div class="normal-result" id="normalAutoStatus">
+        <strong>待機中</strong><br>設定とモードを選び、LEVER ONを押してください。
+      </div>
+
+      <div class="normal-mini-grid">
+        <div class="normal-mini">通常AUTO消化<b id="normalAutoGames">0G</b></div>
+        <div class="normal-mini">レア役回数<b id="normalRareCount">0回</b></div>
+        <div class="normal-mini">通常時当選回数<b id="normalHitCount">0回</b></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>リール停止形・回転方向の確認土台</h2>
+      <div class="reel-note">
+        現在は<strong>実配列・滑り制御未投入</strong>。通常AUTOでは成立役を確認するための代表表示を使います。
+        確認済みの下段BAR・右下がりスイカ・下段赫眼リプレイ以外は、実機停止形の確定表示ではありません。
+      </div>
+
+      <div class="reel-frame">
+        <div class="payline"></div>
+        <div class="reels">
+          <div class="reel" id="reel0">
+            <div class="cell" data-row="0"><span class="sym blank">未確定</span></div>
+            <div class="cell active" data-row="1"><span class="sym blank">未確定</span></div>
+            <div class="cell" data-row="2"><span class="sym bar">BAR</span></div>
+          </div>
+          <div class="reel" id="reel1">
+            <div class="cell" data-row="0"><span class="sym blank">未確定</span></div>
+            <div class="cell active" data-row="1"><span class="sym blank">未確定</span></div>
+            <div class="cell" data-row="2"><span class="sym blank">未確定</span></div>
+          </div>
+          <div class="reel" id="reel2">
+            <div class="cell" data-row="0"><span class="sym blank">未確定</span></div>
+            <div class="cell active" data-row="1"><span class="sym blank">未確定</span></div>
+            <div class="cell" data-row="2"><span class="sym blank">未確定</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="control-grid" style="margin-top:10px">
+        <button class="btn" id="showBaseStop">通常の基準停止形</button>
+        <button class="btn" id="showWatermelon">スイカ停止形</button>
+        <button class="btn" id="showKakuganReplay">赫眼リプレイ</button>
+        <button class="btn blue" id="spinDirectionTest">回転方向テスト</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>状態遷移テスト</h2>
+
+      <div class="subheading">通常時</div>
+      <div class="control-grid">
+        <button class="btn primary" id="normalGame">通常AUTOを1G進める</button>
+        <button class="btn" id="enterPrelude">前兆へ</button>
+        <button class="btn" id="addLcd10">液晶 +10（手動）</button>
+        <button class="btn" id="addLcd100">液晶 +100（手動）</button>
+        <button class="btn" id="stateCycle">状態を切替</button>
+        <button class="btn" id="kakuganOn">赫眼状態を開始</button>
+      </div>
+
+      <div class="subheading">CZ・EP BONUS</div>
+      <div class="control-grid">
+        <button class="btn" id="enterReminiscence">REMINISCENCEへ</button>
+        <button class="btn" id="enterRize">大喰いの利世へ</button>
+        <button class="btn" id="czGame">CZを1G進める</button>
+        <button class="btn gold" id="czSuccess">デバッグ：CZ成功 → AT</button>
+        <button class="btn danger" id="czFail">デバッグ：CZ失敗 → 通常</button>
+        <button class="btn" id="enterEpisode">EP BONUSへ</button>
+        <button class="btn gold wide" id="episodeFinish">EP BONUS終了 → AT</button>
+      </div>
+
+      <div class="subheading">AT突入レバー → 内部項目・対戦相手決定</div>
+      <div class="control-grid">
+        <button class="btn gold wide" id="enterAt">AT突入レバーON</button>
+        <button class="btn" data-opponent="鯱">鯱</button>
+        <button class="btn" data-opponent="霧嶋絢都">霧嶋絢都</button>
+        <button class="btn" data-opponent="ヤモリ">ヤモリ</button>
+        <button class="btn" data-opponent="特等ら（鈴屋＆篠原）">特等ら</button>
+        <button class="btn" data-opponent="亜門鋼太朗">亜門鋼太朗</button>
+        <button class="btn danger" data-opponent="有馬貴将">有馬貴将（特殊）</button>
+      </div>
+
+      <div class="setup-box">
+        <div class="muted">ATレベル（振り分け未投入・手動選択）</div>
+        <div class="control-grid" style="margin-top:8px">
+          <button class="btn" data-at-level="A">レベルA</button>
+          <button class="btn" data-at-level="B">レベルB</button>
+          <button class="btn" data-at-level="C">レベルC</button>
+          <button class="btn" data-at-level="D">レベルD</button>
+        </div>
+        <div class="number-row">
+          <label for="battleGameInput">次回喰種対決までのG数<br><span class="muted">実振り分け未投入</span></label>
+          <input id="battleGameInput" type="number" min="1" max="999" inputmode="numeric" placeholder="例 30">
+        </div>
+        <button class="btn gold wide" id="confirmAtSetup" style="width:100%;margin-top:9px">
+          決定内容を確定 → 約10G導入EP
+        </button>
+      </div>
+
+      <div class="reel-note" style="margin-top:8px">
+        対戦相手・有馬出現・次回対決G数はAT突入時のレバーで抽選。
+        ATレベルはキャラ選択時にA〜Dから抽選。特等らはC以上濃厚、亜門はD濃厚。
+        公開済み情報では30G以内の喰種対決当選率は46.88%。完全な振り分けは入れていません。
+      </div>
+
+      <div class="subheading">約10G導入EP → AT本編 → 対決前兆</div>
+      <div class="control-grid">
+        <button class="btn" id="atIntroGame">導入EPを1G進める</button>
+        <button class="btn" id="enterAtMain">導入EP終了 → AT本編</button>
+        <button class="btn primary wide" id="atMainGame">AT本編を1G進める</button>
+        <button class="btn" id="enterBattle">対決前兆終了 → 喰種対決</button>
+      </div>
+
+      <div class="subheading">喰種対決 4G（勝敗抽選は未投入）</div>
+      <div class="control-grid">
+        <button class="btn" data-battle-role="ハズレ／押し順ベル">ハズレ／押し順ベル</button>
+        <button class="btn blue" data-battle-role="リプレイ">リプレイ</button>
+        <button class="btn blue" data-battle-role="共通ベル">共通ベル</button>
+        <button class="btn primary" data-battle-role="レア役">レア役</button>
+        <button class="btn gold" id="battleWin">対決勝利 → BITES</button>
+        <button class="btn danger" id="battleLose">対決敗北</button>
+      </div>
+
+      <div class="subheading">対決敗北後の次遊技レバー</div>
+      <div class="setup-box">
+        <div class="number-row">
+          <label for="reentryBattleInput">次回喰種対決までのG数<br><span class="muted">敗北後のレバーで抽選</span></label>
+          <input id="reentryBattleInput" type="number" min="1" max="999" inputmode="numeric" placeholder="例 30">
+        </div>
+        <button class="btn wide" id="battleReentryLever" style="width:100%;margin-top:9px">
+          敗北後の次遊技レバーON → AT本編
+        </button>
+      </div>
+
+      <div class="subheading">BITES報酬テーブル決定（対決勝利時）</div>
+      <div class="setup-box">
+        <div class="muted">報酬テーブルはA〜E・超・極の7種類。振り分け抽選そのものは後で統合するため、今回は結果を手動選択します。</div>
+        <div class="bites-table-grid">
+          <button class="btn" data-bites-table="A">テーブルA</button>
+          <button class="btn" data-bites-table="B">テーブルB</button>
+          <button class="btn" data-bites-table="C">テーブルC</button>
+          <button class="btn" data-bites-table="D">テーブルD</button>
+          <button class="btn" data-bites-table="E">テーブルE</button>
+          <button class="btn gold" data-bites-table="超">超BITES</button>
+          <button class="btn danger" data-bites-table="極">極BITES</button>
+        </div>
+        <div class="reward-track" id="rewardTrack"></div>
+        <div class="bites-summary" id="bitesSummary">喰種対決に勝利すると、ここで報酬テーブルを決定します。</div>
+        <button class="btn gold wide" id="confirmBitesTable" style="width:100%;margin-top:9px">
+          確定テーブルでBITES導入1Gへ
+        </button>
+      </div>
+
+      <div class="subheading">BITES導入1G</div>
+      <div class="control-grid">
+        <button class="btn wide" id="bitesIntroFinish">導入1Gを消化 → BITES開始</button>
+      </div>
+      <div class="reel-note" style="margin-top:8px">
+        導入1Gは押し順ナビが出現。レア役成立時は報酬テーブル昇格抽選を行います。
+        昇格先の詳細振り分けを勝手に補わないため、この版では最終テーブルを上のボタンで選んでから開始します。
+      </div>
+
+      <div class="subheading">BITES本編（左押し推奨）</div>
+      <div class="control-grid">
+        <button class="btn blue" id="bitesOneUp">リプレイ／ベル：1UP</button>
+        <button class="btn" id="bitesWeakOneUp">弱レア役：1UP</button>
+        <button class="btn" id="bitesWeakTwoUp">弱レア役：2UP</button>
+        <button class="btn primary" id="bitesTwoUp">強レア役：2UP</button>
+        <button class="btn gold" id="bitesMax">確定チェリー：MAX</button>
+        <button class="btn danger" id="bitesMiss">ハズレ → RETRY判定</button>
+      </div>
+
+      <div class="subheading">BITES RETRY・報酬獲得</div>
+      <div class="control-grid">
+        <button class="btn blue" id="bitesRetryLottery">RETRY抽選（20%）</button>
+        <button class="btn" id="bitesRetryForce">動作確認：RETRY当選</button>
+        <button class="btn danger" id="bitesEndForce">動作確認：RETRY非当選</button>
+        <button class="btn gold wide" id="nextAtCycleLever">報酬加算後・次セットAT突入レバーON</button>
+      </div>
+
+      <div class="subheading">その他の特化ゾーン</div>
+      <div class="control-grid">
+        <button class="btn" id="enterMukade">百足覚醒へ</button>
+        <button class="btn" id="enterOwl">隻眼の梟へ</button>
+        <button class="btn" id="enterCcg">CCGの死神へ</button>
+      </div>
+
+      <div class="subheading">管理</div>
+      <div class="control-grid">
+        <button class="btn wide danger" id="resetAll">全状態をリセット</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>内部デバッグ表示</h2>
+      <div class="debug-line">
+        <span>CZ残りゲーム</span>
+        <span class="pill" id="czRemaining">—</span>
+        <span class="pill" id="czType">—</span>
+      </div>
+      <div class="debug-line">
+        <span>AT初期・残り差枚</span>
+        <span class="pill" id="atRemaining">—</span>
+        <span class="pill" id="atStage">—</span>
+      </div>
+      <div class="debug-line">
+        <span>選択対戦相手</span>
+        <span class="pill" id="opponentDebug">—</span>
+        <span class="pill" id="arimaRight">権利なし</span>
+      </div>
+      <div class="debug-line">
+        <span>ATレベル</span>
+        <span class="pill" id="atLevel">未抽選</span>
+        <span class="pill">A〜D／振分未投入</span>
+      </div>
+      <div class="debug-line">
+        <span>次回対決G数</span>
+        <span class="pill" id="nextBattleGame">抽選値未投入</span>
+        <span class="pill">突入レバーで抽選</span>
+      </div>
+      <div class="debug-line">
+        <span>AT本編消化G</span>
+        <span class="pill" id="atMainGames">0G</span>
+        <span class="pill">差枚消費は未実装</span>
+      </div>
+      <div class="debug-line">
+        <span>次回対決まで</span>
+        <span class="pill" id="battleCountdown">—</span>
+        <span class="pill">手動入力値</span>
+      </div>
+      <div class="debug-line">
+        <span>導入EP残り</span>
+        <span class="pill" id="introRemaining">—</span>
+        <span class="pill">約10G</span>
+      </div>
+      <div class="debug-line">
+        <span>喰種対決残り</span>
+        <span class="pill" id="battleRemaining">—</span>
+        <span class="pill">4G</span>
+      </div>
+      <div class="debug-line">
+        <span>BITES報酬テーブル</span>
+        <span class="pill" id="bitesTable">—</span>
+        <span class="pill">A〜E・超・極</span>
+      </div>
+      <div class="debug-line">
+        <span>BITES報酬ランク</span>
+        <span class="pill" id="bitesLevel">—</span>
+        <span class="pill" id="bitesReward">—</span>
+      </div>
+      <div class="debug-line">
+        <span>BITES RETRY</span>
+        <span class="pill" id="bitesRetryState">—</span>
+        <span class="pill">ハズレ時20%</span>
+      </div>
+      <div class="debug-line">
+        <span>喰ポイント</span>
+        <span class="pill" id="shokuHint">示唆なし</span>
+        <span class="pill">数値非表示</span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>動作ログ</h2>
+      <div class="log" id="log"></div>
+    </section>
+
+    <details open>
+      <summary>この土台へ入れた「確認済みの骨格」</summary>
+      <div class="details-body">
+        <ul>
+          <li>通常時モードは「通常A・通常B・通常C・チャンス・天国準備・天国」の6種類。</li>
+          <li>通常時の状態は「通常・高確・超高確」の3段階。</li>
+          <li>通常時は規定ゲーム数とレア役からCZ・EP BONUSを目指す。</li>
+          <li>スイカは液晶カウンタの加算抽選に関係するが、振り分けはこの版に入れていない。</li>
+          <li>CZはREMINISCENCEと大喰いの利世。どちらも8G。</li>
+          <li>EP BONUSは約100枚獲得後、ATへ。</li>
+          <li>AT「東京喰種咬」は初期約150枚・純増約4.0枚/Gの差枚数管理。</li>
+          <li>AT突入時のレバーで対戦相手（有馬含む）を決定し、その後に約10Gの導入エピソードを消化してAT本編へ。</li>
+          <li>主な対戦相手は鯱・霧嶋絢都・ヤモリ・特等ら・亜門鋼太朗。特殊で有馬貴将。喰種対決は4Gで、勝利後はBITESへ。</li>
+          <li>ゲーム数による次回喰種対決の抽選は、導入EP経由・喰種対決敗北経由ともAT突入時のレバーで行われる。この版は入力したG数を自動カウントする。</li><li>ATレベルはキャラ選択時にA〜Dから抽選。特等らはC以上濃厚、亜門はD濃厚。30G以内の喰種対決当選率は46.88%。</li>
+          <li>BITESは7種類の報酬テーブル。リプレイ・ベルは1UP、弱レア役は1〜2UP、強レア役は2UP、確定チェリーはMAX。ハズレ時は20%でRETRY。</li>
+          <li>BITES終了後は報酬をAT差枚へ加算し、次セットの対戦相手を決定して約10Gの導入EPへ進む流れを確認できる。</li>
+          <li>Ver.0.6では通常時の小役抽選、状態昇格、スイカ加算、赫眼状態、レア役CZ抽選、リプレイAT直撃を自動化。LEVERのみで通常時を進められる。</li><li>Ver.0.7ではREMINISCENCE（総合期待度約52%）と大喰いの利世（約75%）を8G自動進行し、成功時はAT突入レバー、失敗時は通常時へ自動移行する。</li>
+          <li>百足覚醒は5G+α、隻眼の梟とCCGの死神は1G完結。</li>
+          <li>喰ポイントはCZ突入用ではなく、CZ失敗やAT駆け抜け時に蓄積し、規定到達後のAT開始時にBITESストックを得る救済要素。</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>リール部分で現在確認済みのこと</summary>
+      <div class="details-body">
+        <ul>
+          <li>押し順ナビなし時は左第1停止推奨。</li>
+          <li>左リールはBARを目安にチェリーを狙う。</li>
+          <li>通常の基準停止形は左リール下段BAR。</li>
+          <li>スイカは右下がり（左上段 → 中中段 → 右下段）。</li>
+          <li>下段リプレイ揃いは赫眼リプレイ。</li>
+          <li>実リール20コマ配列、滑りコマ数ごとの制御、全停止形は未投入。</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>まだ入れていないもの</summary>
+      <div class="details-body">
+        <ul>
+          <li>実リール配列と全フラグ別の停止制御</li>
+          <li>通常時モードの初回・移行時の完全な振り分け</li>
+          <li>中間ゾーン（△・○・◎）ごとの正確なCZ当選率</li>
+          <li>高確の正確な保証G数・転落条件（Ver.0.6は設定可能な暫定保持G数）</li>
+          <li>CZ当選時のレミニセンス・大喰いの利世・EP BONUSの契機別正確な振り分け</li>
+          <li>CZの成立役別・各トリガー別の正確な成功抽選値（Ver.0.7は公開総合期待度52%・75%を基準に再現）</li>
+          <li>AT中の対戦相手振り分け・規定ゲーム数・状態移行</li>
+          <li>喰種対決の対戦相手別勝利抽選</li>
+          <li>未公開・未確認の振り分けを使った完全AUTO（対戦相手・ATレベル・次回対決G数・勝敗・BITESテーブルは現在停止して手動選択）</li>
+          <li>BITES開始時のレア役による「昇格先」の詳細振り分け</li>
+          <li>BITESのENDING表示条件と有利区間連動</li>
+          <li>有利区間・エンディング・上位関連の詳細</li>
+          <li>版権映像・音声（使用しない）</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>主な確認元</summary>
+      <div class="details-body">
+        <a class="source-link" href="https://1geki.jp/slot/l_tokyoghoul/4/">一撃：小役確率・下段リプレイ設定差</a>
+        <a class="source-link" href="https://nana-press.com/kaiseki/machine/889/27255/">なな徹：状態移行・レア役CZ抽選・スイカ加算</a>
+        <a class="source-link" href="https://p.hisshobon.jp/machine/4459/1/108190">必勝本：赫眼状態保証G数振り分け</a>
+        <a class="source-link" href="https://p.hisshobon.jp/machine/4459/1/108113">必勝本：CZ・EP BONUS実質確率</a>
+        <a class="source-link" href="https://spiky-crossalpha-trivia.jp/tokyoghoul/2521/">公式開発トリビア：通常時のモード概要</a>
+        <a class="source-link" href="https://spiky-crossalpha-trivia.jp/tokyoghoul/2618/">公式開発トリビア：通常時の滞在状態</a>
+        <a class="source-link" href="https://spiky-crossalpha-trivia.jp/tokyoghoul/2425/">公式開発トリビア：REMINISCENCE</a>
+        <a class="source-link" href="https://spiky-crossalpha-trivia.jp/tokyoghoul/2430/">公式開発トリビア：REMINISCENCE告知モード</a>
+        <a class="source-link" href="https://spiky-crossalpha-trivia.jp/tokyoghoul/2445/">公式開発トリビア：大喰いの利世</a>
+        <a class="source-link" href="https://spiky-crossalpha-trivia.jp/tokyoghoul/2367/">公式開発トリビア：AT「東京喰種咬」</a>
+        <a class="source-link" href="https://spiky-crossalpha-trivia.jp/tokyoghoul/3227/">公式開発トリビア：AT突入時の対戦相手抽選</a>
+        <a class="source-link" href="https://spiky-crossalpha-trivia.jp/tokyoghoul/2376/">公式開発トリビア：主な対戦相手と期待度順</a>
+        <a class="source-link" href="https://spiky-crossalpha-trivia.jp/tokyoghoul/8292/">公式開発トリビア：ATレベル別の対決確率・勝率</a>
+        <a class="source-link" href="https://spiky-crossalpha-trivia.jp/tokyoghoul/8825/">公式開発トリビア：ゲーム数による喰種対決抽選タイミング</a>
+        <a class="source-link" href="https://spiky-crossalpha-trivia.jp/tokyoghoul/2385/">公式開発トリビア：喰種対決</a>
+        <a class="source-link" href="https://spiky-crossalpha-trivia.jp/tokyoghoul/2339/">公式開発トリビア：BITES</a>
+        <a class="source-link" href="https://spiky-crossalpha-trivia.jp/tokyoghoul/2349/">公式開発トリビア：BITES中の小役</a>
+        <a class="source-link" href="https://spiky-crossalpha-trivia.jp/tokyoghoul/2363/">公式開発トリビア：BITES RETRY</a>
+        <a class="source-link" href="https://spiky-crossalpha-trivia.jp/tokyoghoul/2525/">公式開発トリビア：BITES報酬テーブル7種類</a>
+        <a class="source-link" href="https://spiky-crossalpha-trivia.jp/tokyoghoul/4770/">公式開発トリビア：BITES導入1G</a>
+        <a class="source-link" href="https://spiky-crossalpha-trivia.jp/tokyoghoul/2679/">公式開発トリビア：喰ポイント</a>
+        <a class="source-link" href="https://p.hisshobon.jp/vpage/2680/3">必勝本：打ち方・停止形・リール配列</a>
+        <a class="source-link" href="https://nana-press.com/kaiseki/machine/889/27003/">なな徹：打ち方・小役停止形</a>
+      </div>
+    </details>
+  </main>
+
+  <script>
+    "use strict";
+
+    const PHASE_LABELS = {
+      normal: "通常時",
+      prelude: "前兆",
+      reminiscence: "REMINISCENCE",
+      rize: "大喰いの利世",
+      episode: "EP BONUS",
+      atOpponent: "AT内部項目・対戦相手決定",
+      atIntro: "AT導入エピソード",
+      atMain: "東京喰種咬",
+      battlePrelude: "喰種対決前兆",
+      battle: "喰種対決",
+      battleReentry: "対決敗北後レバー待ち",
+      bitesSetup: "BITES報酬テーブル決定",
+      bitesIntro: "BITES導入1G",
+      bites: "BITES",
+      bitesRetry: "BITES RETRY判定",
+      bitesResult: "BITES報酬獲得",
+      atCycleLever: "次セットAT突入レバー待ち",
+      mukade: "百足覚醒",
+      owl: "隻眼の梟",
+      ccg: "CCGの死神"
+    };
+
+    const state = {
+      phase: "normal",
+      realGames: 0,
+      lcdCounter: 0,
+      normalState: "通常",
+      normalMode: "未抽選",
+      kakuganGames: 0,
+      czType: null,
+      czRemaining: null,
+      czCurrentGame: 0,
+      czAutoSuccess: null,
+      czRevealGame: null,
+      czLastRole: "—",
+      czResolved: false,
+      atRemaining: null,
+      atStage: null,
+      atOpponent: null,
+      atLevel: "未抽選",
+      nextBattleGame: "抽選値未投入",
+      atMainGames: 0,
+      battleCountdown: null,
+      arimaJudgementRight: false,
+      introRemaining: null,
+      battleRemaining: null,
+      bitesTable: null,
+      bitesLevel: null,
+      bitesReward: null,
+      bitesRetryState: null,
+      shokuHint: "示唆なし",
+      spinTimer: null,
+      spinTicks: 0,
+      setting: 1,
+      normalStateGames: 0,
+      normalStateReturn: "通常",
+      pendingNormalRole: null,
+      normalReelStopped: [true, true, true],
+      normalSpinTimer: null,
+      normalSpinTicks: 0,
+      autoStop: true,
+      lastNormalRole: "—",
+      normalAutoGames: 0,
+      normalRareCount: 0,
+      normalHitCount: 0,
+      autoPreludeTarget: null,
+      autoPreludeSource: null
+    };
+
+    const els = {
+      phaseStat: document.getElementById("phaseStat"),
+      realGamesStat: document.getElementById("realGamesStat"),
+      lcdCounterStat: document.getElementById("lcdCounterStat"),
+      normalStateStat: document.getElementById("normalStateStat"),
+      normalModeStat: document.getElementById("normalModeStat"),
+      opponentStat: document.getElementById("opponentStat"),
+      kakuganStat: document.getElementById("kakuganStat"),
+      normalStateTimerStat: document.getElementById("normalStateTimerStat"),
+      lastNormalRoleStat: document.getElementById("lastNormalRoleStat"),
+      settingSelect: document.getElementById("settingSelect"),
+      normalModeSelect: document.getElementById("normalModeSelect"),
+      highHoldInput: document.getElementById("highHoldInput"),
+      modeCeilingDisplay: document.getElementById("modeCeilingDisplay"),
+      autoStopToggle: document.getElementById("autoStopToggle"),
+      normalLever: document.getElementById("normalLever"),
+      normalStopButtons: [
+        document.getElementById("normalStopLeft"),
+        document.getElementById("normalStopMiddle"),
+        document.getElementById("normalStopRight")
+      ],
+      normalAutoStatus: document.getElementById("normalAutoStatus"),
+      normalAutoGames: document.getElementById("normalAutoGames"),
+      normalRareCount: document.getElementById("normalRareCount"),
+      normalHitCount: document.getElementById("normalHitCount"),
+      phaseName: document.getElementById("phaseName"),
+      phaseDetail: document.getElementById("phaseDetail"),
+      czRemaining: document.getElementById("czRemaining"),
+      czType: document.getElementById("czType"),
+      atRemaining: document.getElementById("atRemaining"),
+      atStage: document.getElementById("atStage"),
+      opponentDebug: document.getElementById("opponentDebug"),
+      arimaRight: document.getElementById("arimaRight"),
+      atLevel: document.getElementById("atLevel"),
+      nextBattleGame: document.getElementById("nextBattleGame"),
+      atMainGames: document.getElementById("atMainGames"),
+      battleCountdown: document.getElementById("battleCountdown"),
+      introRemaining: document.getElementById("introRemaining"),
+      battleRemaining: document.getElementById("battleRemaining"),
+      bitesTable: document.getElementById("bitesTable"),
+      bitesLevel: document.getElementById("bitesLevel"),
+      bitesReward: document.getElementById("bitesReward"),
+      bitesRetryState: document.getElementById("bitesRetryState"),
+      rewardTrack: document.getElementById("rewardTrack"),
+      bitesSummary: document.getElementById("bitesSummary"),
+      quickPhaseBadge: document.getElementById("quickPhaseBadge"),
+      quickActionText: document.getElementById("quickActionText"),
+      quickGrid: document.getElementById("quickGrid"),
+      smartAdvanceButton: document.getElementById("smartAdvanceButton"),
+      fastForwardButton: document.getElementById("fastForwardButton"),
+      shokuHint: document.getElementById("shokuHint"),
+      log: document.getElementById("log")
+    };
+
+    function log(message) {
+      const item = document.createElement("div");
+      item.className = "log-entry";
+      const now = new Date();
+      item.textContent =
+        `[${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}:${String(now.getSeconds()).padStart(2, "0")}] ${message}`;
+      els.log.prepend(item);
+    }
+
+    function setPhase(phase, detail) {
+      state.phase = phase;
+      els.phaseDetail.textContent = detail;
+      render();
+    }
+
+    function render() {
+      const phaseLabel = PHASE_LABELS[state.phase] ?? state.phase;
+      els.phaseStat.textContent = phaseLabel;
+      els.phaseName.textContent = phaseLabel;
+      els.realGamesStat.textContent = `${state.realGames}G`;
+      els.lcdCounterStat.textContent = String(state.lcdCounter);
+      els.normalStateStat.textContent = state.normalState;
+      els.normalModeStat.textContent = state.normalMode;
+      els.opponentStat.textContent = state.atOpponent ?? "—";
+      els.kakuganStat.textContent =
+        state.kakuganGames > 0 ? `ON（残り${state.kakuganGames}G）` : "OFF";
+      els.normalStateTimerStat.textContent =
+        state.normalState === "通常" ? "—" : `${state.normalStateGames}G`;
+      els.lastNormalRoleStat.textContent = state.lastNormalRole;
+      els.normalAutoGames.textContent = `${state.normalAutoGames}G`;
+      els.normalRareCount.textContent = `${state.normalRareCount}回`;
+      els.normalHitCount.textContent = `${state.normalHitCount}回`;
+      updateNormalControlState();
+
+      els.czRemaining.textContent =
+        state.czRemaining === null ? "—" : `${state.czRemaining}G`;
+      els.czType.textContent = state.czType ?? "—";
+      els.atRemaining.textContent =
+        state.atRemaining === null ? "—" : `約${state.atRemaining}枚`;
+      els.atStage.textContent = state.atStage ?? "—";
+      els.opponentDebug.textContent = state.atOpponent ?? "—";
+      els.arimaRight.textContent = state.arimaJudgementRight ? "有馬J権利あり" : "権利なし";
+      els.atLevel.textContent = state.atLevel;
+      els.nextBattleGame.textContent = state.nextBattleGame;
+      els.atMainGames.textContent = `${state.atMainGames}G`;
+      els.battleCountdown.textContent = state.battleCountdown === null ? "—" : `${state.battleCountdown}G`;
+      els.introRemaining.textContent =
+        state.introRemaining === null ? "—" : `${state.introRemaining}G`;
+      els.battleRemaining.textContent =
+        state.battleRemaining === null ? "—" : `${state.battleRemaining}G`;
+      els.bitesTable.textContent = state.bitesTable ?? "—";
+      els.bitesLevel.textContent =
+        state.bitesLevel === null ? "—" : `ランク${state.bitesLevel + 1}`;
+      els.bitesReward.textContent =
+        state.bitesReward === null ? "—" : `${state.bitesReward}枚`;
+      els.bitesRetryState.textContent = state.bitesRetryState ?? "—";
+      els.shokuHint.textContent = state.shokuHint;
+      renderBitesTrack();
+      renderQuickControls();
+    }
+
+    function consumeCommonGame() {
+      state.realGames += 1;
+      if (state.kakuganGames > 0) {
+        state.kakuganGames -= 1;
+      }
+    }
+
+    function consumeCommonGames(count) {
+      const safeCount = Math.max(0, Number.parseInt(count, 10) || 0);
+      state.realGames += safeCount;
+      if (state.kakuganGames > 0) {
+        state.kakuganGames = Math.max(0, state.kakuganGames - safeCount);
+      }
+    }
+
+    function getQuickControlState() {
+      const noFast = { fastVisible: false, fastLabel: "", fastDisabled: true };
+
+      switch (state.phase) {
+        case "normal":
+          return {
+            actionText: "通常時AUTO。公開済み抽選を使って1G、または10Gまとめて進行します。",
+            mainLabel: "通常AUTOを1G進める",
+            mainDisabled: false,
+            fastVisible: true,
+            fastLabel: "通常AUTOを10Gまとめる",
+            fastDisabled: false
+          };
+
+        case "prelude":
+          return {
+            actionText: "前兆の移行先や前兆ゲーム数が未確定です。下の手動ボタンから移行先を選びます。",
+            mainLabel: "移行先の選択待ち",
+            mainDisabled: true,
+            ...noFast
+          };
+
+        case "reminiscence":
+        case "rize": {
+          const remaining = state.czRemaining ?? 0;
+          return {
+            actionText: `${state.czType}残り${remaining}G。総合期待度基準の当否を保持し、1Gごとに自動進行します。`,
+            mainLabel: "CZを1G自動進行",
+            mainDisabled: state.czResolved || remaining <= 0,
+            fastVisible: true,
+            fastLabel: "CZ結果まで自動進行",
+            fastDisabled: state.czResolved || remaining <= 0
+          };
+        }
+
+        case "episode":
+          return {
+            actionText: "EP BONUSの獲得枚数進行は未統合です。終了操作からAT突入レバーへ進みます。",
+            mainLabel: "EP BONUS終了 → AT突入",
+            mainDisabled: false,
+            ...noFast
+          };
+
+        case "atOpponent": {
+          const game = readPositiveGameInput("battleGameInput");
+          const ready = Boolean(state.atOpponent) && ["A", "B", "C", "D"].includes(state.atLevel) && game !== null;
+          return {
+            actionText: ready
+              ? `対戦相手・ATレベル・次回${game}Gの選択済み。確定して導入EPへ進めます。`
+              : "対戦相手・ATレベル・次回対決G数は振り分け未統合のため、下で選択してください。",
+            mainLabel: ready ? "選択内容を確定 → 導入EP" : "相手・レベル・G数を選択",
+            mainDisabled: !ready,
+            ...noFast
+          };
+        }
+
+        case "atIntro": {
+          const remaining = state.introRemaining ?? 0;
+          return {
+            actionText: `対戦相手決定後の導入EP。残り${remaining}Gです。`,
+            mainLabel: remaining > 0 ? "導入EPを1G進める" : "AT本編へ進む",
+            mainDisabled: false,
+            fastVisible: remaining > 0,
+            fastLabel: remaining > 0 ? `残り${remaining}Gまとめて → AT本編` : "",
+            fastDisabled: remaining <= 0
+          };
+        }
+
+        case "atMain": {
+          const remaining = state.battleCountdown ?? 0;
+          return {
+            actionText: `AT本編。次回喰種対決まで残り${remaining}Gです。`,
+            mainLabel: remaining > 0 ? "AT本編を1G進める" : "喰種対決前兆へ",
+            mainDisabled: false,
+            fastVisible: remaining > 0,
+            fastLabel: remaining > 0 ? `対決まで${remaining}Gまとめて消化` : "",
+            fastDisabled: remaining <= 0
+          };
+        }
+
+        case "battlePrelude":
+          return {
+            actionText: "喰種対決前兆。前兆ゲーム数は未統合なので、終了操作で4Gの対決へ進みます。",
+            mainLabel: "前兆終了 → 喰種対決",
+            mainDisabled: false,
+            ...noFast
+          };
+
+        case "battle":
+          return {
+            actionText: `喰種対決残り${state.battleRemaining ?? 0}G。成立役と勝敗抽選が未統合なので、下の役ボタンを選択してください。`,
+            mainLabel: "成立役の選択待ち",
+            mainDisabled: true,
+            ...noFast
+          };
+
+        case "battleReentry": {
+          const game = readPositiveGameInput("reentryBattleInput");
+          return {
+            actionText: game === null
+              ? "対決敗北後。次回対決G数の振り分け未統合のため、下へG数を入力してください。"
+              : `次回対決まで${game}Gで、敗北後の次遊技レバーを実行できます。`,
+            mainLabel: game === null ? "次回対決G数を入力" : "敗北後の次遊技レバーON",
+            mainDisabled: game === null,
+            ...noFast
+          };
+        }
+
+        case "bitesSetup":
+          return {
+            actionText: state.bitesTable
+              ? `BITESテーブル${state.bitesTable}を選択済み。確定して導入1Gへ進めます。`
+              : "BITES報酬テーブルの振り分け未統合のため、下からテーブルを選択してください。",
+            mainLabel: state.bitesTable ? "テーブル確定 → 導入1G" : "テーブルの選択待ち",
+            mainDisabled: !state.bitesTable,
+            ...noFast
+          };
+
+        case "bitesIntro":
+          return {
+            actionText: "BITES導入1G。1G消化後、自動でBITES本編へ進みます。",
+            mainLabel: "導入1Gを消化 → BITES",
+            mainDisabled: false,
+            ...noFast
+          };
+
+        case "bites":
+          return {
+            actionText: `BITES継続中。現在報酬${state.bitesReward ?? 0}枚。成立役を下から選択してください。`,
+            mainLabel: "成立役の選択待ち",
+            mainDisabled: true,
+            ...noFast
+          };
+
+        case "bitesRetry":
+          return {
+            actionText: "BITESハズレ後。公開済みの20%でRETRY抽選を実行します。",
+            mainLabel: "MAX BET → RETRY抽選",
+            mainDisabled: false,
+            ...noFast
+          };
+
+        case "bitesResult":
+          return {
+            actionText: `BITES報酬${state.bitesReward ?? 0}枚を加算済み。次セットのAT突入レバーへ進みます。`,
+            mainLabel: "次セットAT突入レバーON",
+            mainDisabled: false,
+            ...noFast
+          };
+
+        default:
+          return {
+            actionText: "このフェーズの自動進行はまだ未統合です。下の手動操作を使ってください。",
+            mainLabel: "手動操作待ち",
+            mainDisabled: true,
+            ...noFast
+          };
+      }
+    }
+
+    function renderQuickControls() {
+      if (!els.smartAdvanceButton || !els.fastForwardButton) {
+        return;
+      }
+
+      const quick = getQuickControlState();
+      els.quickPhaseBadge.textContent = PHASE_LABELS[state.phase] ?? state.phase;
+      els.quickActionText.textContent = quick.actionText;
+      els.smartAdvanceButton.textContent = quick.mainLabel;
+      els.smartAdvanceButton.disabled = quick.mainDisabled;
+      els.fastForwardButton.hidden = !quick.fastVisible;
+      els.fastForwardButton.disabled = quick.fastDisabled;
+      els.fastForwardButton.textContent = quick.fastLabel || "まとめて進行";
+      els.quickGrid.classList.toggle("single", !quick.fastVisible);
+    }
+
+    function smartAdvance() {
+      switch (state.phase) {
+        case "normal":
+          normalOneGame();
+          break;
+        case "reminiscence":
+        case "rize":
+          czOneGame();
+          break;
+        case "episode":
+          beginAtSelection("EP BONUS終了");
+          break;
+        case "atOpponent":
+          confirmAtSetup();
+          break;
+        case "atIntro":
+          atIntroOneGame();
+          break;
+        case "atMain":
+          if ((state.battleCountdown ?? 0) <= 0) {
+            state.atStage = "喰種対決前兆";
+            setPhase(
+              "battlePrelude",
+              `規定のATゲーム数に到達。
+対戦相手：${state.atOpponent}
+喰種対決前兆へ移行。前兆ゲーム数は未投入のため、次の操作で対決へ進みます。`
+            );
+          } else {
+            atMainOneGame();
+          }
+          break;
+        case "battlePrelude":
+          enterBattle();
+          break;
+        case "battleReentry":
+          battleReentryLever();
+          break;
+        case "bitesSetup":
+          confirmBitesTable();
+          break;
+        case "bitesIntro":
+          startBitesMain();
+          break;
+        case "bitesRetry":
+          resolveBitesRetry(null);
+          break;
+        case "bitesResult":
+          nextAtCycleLever();
+          break;
+        default:
+          log("このフェーズは、まだかんたん進行の対象外です。");
+      }
+    }
+
+    function fastForwardCurrentPhase() {
+      switch (state.phase) {
+        case "normal": {
+          let completed = 0;
+          for (let i = 0; i < 10; i += 1) {
+            if (state.phase !== "normal" || state.pendingNormalRole) {
+              break;
+            }
+            runNormalGameImmediate();
+            completed += 1;
+          }
+          log(`通常AUTO：${completed}Gまとめて消化`);
+          render();
+          break;
+        }
+
+        case "reminiscence":
+        case "rize": {
+          let safety = 12;
+          while (["reminiscence", "rize"].includes(state.phase) && safety > 0) {
+            czOneGame();
+            safety -= 1;
+          }
+          log("かんたん進行：CZ結果まで自動進行");
+          render();
+          break;
+        }
+
+        case "atIntro": {
+          const count = Math.max(0, state.introRemaining ?? 0);
+          if (count > 0) {
+            consumeCommonGames(count);
+            state.introRemaining = 0;
+            log(`かんたん進行：AT導入EP残り${count}G消化`);
+          }
+          startAtMain("導入エピソードをまとめて消化。");
+          break;
+        }
+
+        case "atMain": {
+          const count = Math.max(0, state.battleCountdown ?? 0);
+          if (count <= 0) {
+            smartAdvance();
+            return;
+          }
+          consumeCommonGames(count);
+          state.atMainGames += count;
+          state.battleCountdown = 0;
+          state.atStage = "喰種対決前兆";
+          setPhase(
+            "battlePrelude",
+            `AT本編を${count}Gまとめて消化。
+対戦相手：${state.atOpponent}
+規定ゲーム数に到達し、喰種対決前兆へ移行。前兆ゲーム数は未投入です。`
+          );
+          log(`かんたん進行：AT本編${count}G消化 → 喰種対決前兆`);
+          break;
+        }
+
+        default:
+          log("このフェーズには、まとめて進行できる確定ゲーム数がありません。");
+      }
+    }
+
+    const MODE_CEILINGS = {
+      "通常A": 600,
+      "通常B": 600,
+      "通常C": 500,
+      "チャンス": 600,
+      "天国準備": 300,
+      "天国": 100,
+      "朝一特殊": 200
+    };
+
+    const MODE_ZONES = {
+      "通常A": [200, 400, 600],
+      "通常B": [100, 300, 500, 600],
+      "通常C": [100, 200, 300, 400, 500],
+      "チャンス": [50, 100, 150, 200, 250, 300, 600],
+      "天国準備": [50, 100, 150, 200, 300],
+      "天国": [50, 100],
+      "朝一特殊": [50, 100, 150, 200]
+    };
+
+    const LOWER_REPLAY_DENOM = {
+      1: 1260.3, 2: 1213.6, 3: 1170.3,
+      4: 1129.9, 5: 1092.3, 6: 1024.0
+    };
+
+    const DIRECT_AT_DENOM = {
+      1: 28460.6, 2: 24453.5, 3: 18093.0,
+      4: 12019.5, 5: 8615.4, 6: 7036.8
+    };
+
+    const WEAK_CZ_NORMAL = {
+      1: 0.27, 2: 0.29, 3: 0.31, 4: 0.33, 5: 0.38, 6: 0.43
+    };
+
+    const WEAK_CZ_HIGH = {
+      1: 0.59, 2: 0.63, 3: 0.69, 4: 0.73, 5: 0.83, 6: 0.95
+    };
+
+    const WEAK_CZ_ULTRA = {
+      1: 40.27, 2: 43.8, 3: 47.2, 4: 50.7, 5: 56.4, 6: 64.4
+    };
+
+    const WATERMELON_CZ_ULTRA = {
+      1: 13.78, 2: 15.0, 3: 16.0, 4: 17.2, 5: 19.4, 6: 22.0
+    };
+
+    const SUPER_HIGH_GAMES = {
+      1: [[13, 81.3], [23, 15.6], [33, 3.1]],
+      2: [[13, 81.3], [23, 15.6], [33, 3.1]],
+      3: [[13, 75.0], [23, 18.8], [33, 6.3]],
+      4: [[13, 71.9], [23, 18.8], [33, 9.4]],
+      5: [[13, 67.2], [23, 21.9], [33, 10.9]],
+      6: [[13, 65.6], [23, 21.9], [33, 12.5]]
+    };
+
+    const OUTPUT_RATES = {
+      1: { reminiscence: 300.5, rize: 2079.1, episode: 6620.2 },
+      2: { reminiscence: 295.1, rize: 1906.5, episode: 5879.7 },
+      3: { reminiscence: 287.6, rize: 1722.8, episode: 5114.5 },
+      4: { reminiscence: 276.6, rize: 1478.9, episode: 4062.5 },
+      5: { reminiscence: 262.7, rize: 1226.6, episode: 3166.7 },
+      6: { reminiscence: 251.2, rize: 1074.9, episode: 2639.5 }
+    };
+
+    const RARE_ROLE_KEYS = new Set([
+      "weakCherry", "strongCherry", "watermelon", "chanceA",
+      "chanceB", "confirmedCherry", "eat"
+    ]);
+
+    const ROLE_LABELS = {
+      other: "ハズレ／押し順ベル",
+      replay: "リプレイ",
+      diagonalBell: "斜めベル",
+      weakCherry: "弱チェリー",
+      strongCherry: "強チェリー",
+      watermelon: "スイカ",
+      chanceA: "チャンス目A",
+      chanceB: "チャンス目B",
+      lowerReplay: "下段リプレイ",
+      eat: "喰図柄揃い",
+      confirmedCherry: "確定チェリー"
+    };
+
+    function chance(percent) {
+      return Math.random() * 100 < percent;
+    }
+
+    function weightedPick(entries) {
+      const total = entries.reduce((sum, item) => sum + item[1], 0);
+      let roll = Math.random() * total;
+      for (const [value, weight] of entries) {
+        roll -= weight;
+        if (roll < 0) return value;
+      }
+      return entries[entries.length - 1][0];
+    }
+
+    function readHighHoldGames() {
+      const value = Number.parseInt(els.highHoldInput.value, 10);
+      return Number.isInteger(value) && value >= 1 && value <= 99 ? value : 20;
+    }
+
+    function setNormalState(nextState, games = 0, returnState = "通常", reason = "") {
+      state.normalState = nextState;
+      state.normalStateGames = games;
+      state.normalStateReturn = returnState;
+      if (reason) log(`状態移行：${nextState}${games ? ` ${games}G` : ""}（${reason}）`);
+    }
+
+    function rollSuperHighGames() {
+      return weightedPick(SUPER_HIGH_GAMES[state.setting]);
+    }
+
+    function rollKakuganGames() {
+      return weightedPick([[10, 59.4], [20, 35.9], [30, 3.1], [50, 1.6]]);
+    }
+
+    function drawNormalRole() {
+      const probabilities = [
+        ["lowerReplay", 1 / LOWER_REPLAY_DENOM[state.setting]],
+        ["eat", 1 / 2048.0],
+        ["chanceA", 1 / 585.1],
+        ["chanceB", 1 / 585.1],
+        ["watermelon", 1 / 100.5],
+        ["diagonalBell", 1 / 131.1],
+        ["replay", 1 / 7.3]
+      ];
+
+      if (state.kakuganGames > 0) {
+        const nonCherryRare =
+          (1 / 100.5) + (1 / 585.1) + (1 / 585.1) + (1 / 2048.0);
+        const targetCherry = Math.max(0, (1 / 2.6) - nonCherryRare);
+        const baseWeak = 1 / 70.3;
+        const baseStrong = 1 / 356.2;
+        const baseConfirmed = 1 / 16384.0;
+        const cherryBaseTotal = baseWeak + baseStrong + baseConfirmed;
+        probabilities.push(["weakCherry", targetCherry * (baseWeak / cherryBaseTotal)]);
+        probabilities.push(["strongCherry", targetCherry * (baseStrong / cherryBaseTotal)]);
+        probabilities.push(["confirmedCherry", targetCherry * (baseConfirmed / cherryBaseTotal)]);
+      } else {
+        probabilities.push(["weakCherry", 1 / 70.3]);
+        probabilities.push(["strongCherry", 1 / 356.2]);
+        probabilities.push(["confirmedCherry", 1 / 16384.0]);
+      }
+
+      const total = probabilities.reduce((sum, item) => sum + item[1], 0);
+      let roll = Math.random();
+      for (const [key, probability] of probabilities) {
+        if (roll < probability) return key;
+        roll -= probability;
+      }
+      return total > 1 ? probabilities[probabilities.length - 1][0] : "other";
+    }
+
+    function normalRoleMatrix(role) {
+      const base = [
+        ["blank", "blank", "bar"],
+        ["blank", "blank", "blank"],
+        ["blank", "blank", "blank"]
+      ];
+
+      if (role === "watermelon") {
+        return [
+          ["watermelon", "blank", "blank"],
+          ["blank", "watermelon", "blank"],
+          ["blank", "blank", "watermelon"]
+        ];
+      }
+      if (role === "lowerReplay") {
+        return [
+          ["blank", "blank", "replay"],
+          ["blank", "blank", "replay"],
+          ["blank", "blank", "replay"]
+        ];
+      }
+      if (role === "replay") {
+        return [
+          ["blank", "replay", "blank"],
+          ["blank", "replay", "blank"],
+          ["blank", "replay", "blank"]
+        ];
+      }
+      if (role === "diagonalBell") {
+        return [
+          ["blank", "bell", "bar"],
+          ["blank", "bell", "blank"],
+          ["blank", "bell", "blank"]
+        ];
+      }
+      if (["weakCherry", "strongCherry"].includes(role)) {
+        return [
+          ["blank", "cherry", "bar"],
+          ["blank", "blank", "blank"],
+          ["blank", "blank", "blank"]
+        ];
+      }
+      if (["chanceA", "chanceB"].includes(role)) {
+        return [
+          ["blank", "chance", "bar"],
+          ["blank", "chance", "blank"],
+          ["blank", "chance", "blank"]
+        ];
+      }
+      if (role === "eat") {
+        return [
+          ["blank", "eat", "blank"],
+          ["blank", "eat", "blank"],
+          ["blank", "eat", "blank"]
+        ];
+      }
+      if (role === "confirmedCherry") {
+        return [
+          ["blank", "bar", "blank"],
+          ["blank", "bar", "blank"],
+          ["blank", "bar", "blank"]
+        ];
+      }
+      return base;
+    }
+
+    function applyReelColumn(reelIndex, column) {
+      clearReelHighlights();
+      const cells = reelEls[reelIndex].querySelectorAll(".cell");
+      cells.forEach((cell, rowIndex) => {
+        cell.innerHTML = symbolHtml[column[rowIndex]];
+      });
+    }
+
+    function startNormalSpinAnimation() {
+      if (state.normalSpinTimer !== null) clearInterval(state.normalSpinTimer);
+      const cycle = ["bar", "replay", "bell", "cherry", "watermelon", "chance", "kaku", "eat"];
+      state.normalSpinTicks = 0;
+      reelEls.forEach((reel, index) => {
+        if (!state.normalReelStopped[index]) reel.classList.add("spinning");
+      });
+      state.normalSpinTimer = setInterval(() => {
+        state.normalSpinTicks += 1;
+        reelEls.forEach((reel, reelIndex) => {
+          if (state.normalReelStopped[reelIndex]) return;
+          const cells = Array.from(reel.querySelectorAll(".cell"));
+          const previous = cells.map(cell => cell.innerHTML);
+          cells[2].innerHTML = previous[1];
+          cells[1].innerHTML = previous[0];
+          const key = cycle[(state.normalSpinTicks + reelIndex * 2) % cycle.length];
+          cells[0].innerHTML = symbolHtml[key];
+        });
+      }, 70);
+    }
+
+    function updateNormalControlState() {
+      if (!els.normalLever) return;
+      const spinning = Boolean(state.pendingNormalRole);
+      els.normalLever.disabled = state.phase !== "normal" || spinning;
+      els.normalStopButtons.forEach((button, index) => {
+        button.disabled = !spinning || state.normalReelStopped[index];
+        button.classList.toggle("stopped", spinning && state.normalReelStopped[index]);
+      });
+      els.settingSelect.disabled = spinning;
+      els.normalModeSelect.disabled = spinning;
+      els.highHoldInput.disabled = spinning;
+      els.autoStopToggle.disabled = spinning;
+      els.modeCeilingDisplay.textContent = `${MODE_CEILINGS[state.normalMode] ?? 600}G+α`;
+    }
+
+    function normalLever(autoResolve = false) {
+      if (state.phase !== "normal") {
+        log("通常時ではないためLEVERを受け付けませんでした。");
+        return;
+      }
+      if (state.pendingNormalRole) return;
+
+      state.setting = Number.parseInt(els.settingSelect.value, 10) || 1;
+      state.normalMode = els.normalModeSelect.value;
+      state.autoStop = Boolean(els.autoStopToggle.checked);
+      state.pendingNormalRole = drawNormalRole();
+      state.normalReelStopped = [false, false, false];
+      els.normalAutoStatus.innerHTML = `<strong>回転中</strong><br>成立役を内部抽選しました。`;
+      startNormalSpinAnimation();
+      render();
+
+      if (state.autoStop || autoResolve) {
+        setTimeout(() => stopNormalReel(0), 220);
+        setTimeout(() => stopNormalReel(1), 390);
+        setTimeout(() => stopNormalReel(2), 560);
+      }
+    }
+
+    function stopNormalReel(index) {
+      if (!state.pendingNormalRole || state.normalReelStopped[index]) return;
+      const matrix = normalRoleMatrix(state.pendingNormalRole);
+      state.normalReelStopped[index] = true;
+      reelEls[index].classList.remove("spinning");
+      applyReelColumn(index, matrix[index]);
+      render();
+
+      if (state.normalReelStopped.every(Boolean)) {
+        if (state.normalSpinTimer !== null) {
+          clearInterval(state.normalSpinTimer);
+          state.normalSpinTimer = null;
+        }
+        resolveNormalGame(state.pendingNormalRole);
+      }
+    }
+
+    function tickNormalState() {
+      if (state.normalState === "通常" || state.normalStateGames <= 0) return;
+      state.normalStateGames = Math.max(0, state.normalStateGames - 1);
+      if (state.normalStateGames === 0) {
+        const returnState = state.normalStateReturn || "通常";
+        setNormalState(returnState, 0, "通常", "保証G数終了");
+      }
+    }
+
+    function processStateUpgrade(role, sourceState = state.normalState) {
+      if (!["replay", "weakCherry"].includes(role)) return "";
+      const isWeak = role === "weakCherry";
+
+      if (sourceState === "通常") {
+        const ultraRate = isWeak ? 1.56 : 0.05;
+        const highRate = isWeak ? 39.06 : 0.78;
+        const roll = Math.random() * 100;
+        if (roll < ultraRate) {
+          const games = rollSuperHighGames();
+          setNormalState("超高確", games, "通常", ROLE_LABELS[role]);
+          return `超高確へ（${games}G）`;
+        }
+        if (roll < ultraRate + highRate) {
+          const games = readHighHoldGames();
+          setNormalState("高確", games, "通常", `${ROLE_LABELS[role]}／高確G数は暫定`);
+          return `高確へ（暫定${games}G）`;
+        }
+      } else if (sourceState === "高確") {
+        const ultraRate = isWeak ? 50.0 : 1.56;
+        if (chance(ultraRate)) {
+          const games = rollSuperHighGames();
+          setNormalState("超高確", games, "通常", ROLE_LABELS[role]);
+          return `超高確へ（${games}G）`;
+        }
+      }
+      return "";
+    }
+
+    function rareRoleHitRate(role, normalState = state.normalState) {
+      if (role === "weakCherry") {
+        if (normalState === "超高確") return WEAK_CZ_ULTRA[state.setting];
+        if (normalState === "高確") return WEAK_CZ_HIGH[state.setting];
+        return WEAK_CZ_NORMAL[state.setting];
+      }
+      if (role === "watermelon") {
+        return normalState === "超高確" ? WATERMELON_CZ_ULTRA[state.setting] : 0;
+      }
+      if (["chanceA", "chanceB"].includes(role)) {
+        if (normalState === "超高確") return 100;
+        return normalState === "高確" ? 25.10 : 11.38;
+      }
+      if (role === "strongCherry") {
+        if (normalState === "超高確") return 100;
+        return normalState === "高確" ? 34.86 : 19.58;
+      }
+      if (role === "confirmedCherry") return 100;
+      return 0;
+    }
+
+    function chooseNormalOutcome() {
+      const rates = OUTPUT_RATES[state.setting];
+      return weightedPick([
+        ["REMINISCENCE", 1 / rates.reminiscence],
+        ["大喰いの利世", 1 / rates.rize],
+        ["EP BONUS", 1 / rates.episode]
+      ]);
+    }
+
+    function queueNormalOutcome(target, source, immediate = false) {
+      state.normalHitCount += 1;
+      state.autoPreludeTarget = target;
+      state.autoPreludeSource = source;
+      setPhase(
+        "prelude",
+        `東京上空・前兆（簡易表示）\n契機：${source}\n移行先：${target}\n前兆ゲーム数は未公開部分があるため、この版では演出待ちのみ。`
+      );
+      log(`通常時当選：${source} → ${target}`);
+      if (immediate) {
+        resolveAutoPrelude();
+      } else {
+        setTimeout(resolveAutoPrelude, 750);
+      }
+    }
+
+    function resolveAutoPrelude() {
+      if (state.phase !== "prelude" || !state.autoPreludeTarget) return;
+      const target = state.autoPreludeTarget;
+      state.autoPreludeTarget = null;
+      if (target === "REMINISCENCE") {
+        enterCz("REMINISCENCE");
+      } else if (target === "大喰いの利世") {
+        enterCz("大喰いの利世");
+      } else if (target === "EP BONUS") {
+        setPhase(
+          "episode",
+          "EP BONUS：約100枚獲得。\n消化中の上乗せ抽選は次段階で統合します。終了後はATへ。"
+        );
+      } else if (target === "AT直撃") {
+        beginAtSelection("通常時リプレイAT直撃");
+      }
+    }
+
+    function resolveNormalGame(role, immediateOutcome = false) {
+      const label = ROLE_LABELS[role] ?? role;
+      state.pendingNormalRole = null;
+      state.normalReelStopped = [true, true, true];
+      state.lastNormalRole = label;
+      state.normalAutoGames += 1;
+      state.realGames += 1;
+      state.lcdCounter += 1;
+
+      const wasKakugan = state.kakuganGames > 0;
+      const normalStateAtStart = state.normalState;
+      if (wasKakugan) state.kakuganGames = Math.max(0, state.kakuganGames - 1);
+      tickNormalState();
+
+      let details = [];
+      if (RARE_ROLE_KEYS.has(role)) state.normalRareCount += 1;
+
+      if (role === "lowerReplay") {
+        const add = rollKakuganGames();
+        state.kakuganGames += add;
+        details.push(`赫眼状態 +${add}G`);
+      }
+
+      if (role === "watermelon") {
+        const add = weightedPick([[10, 74], [100, 25], ["MAX", 1]]);
+        if (add === "MAX") {
+          const ceiling = MODE_CEILINGS[state.normalMode] ?? 600;
+          state.lcdCounter = Math.max(state.lcdCounter, ceiling);
+          details.push(`液晶MAX（${ceiling}G到達）`);
+        } else {
+          state.lcdCounter += add;
+          details.push(`液晶+${add}G`);
+        }
+      }
+
+      const stateUpgrade = processStateUpgrade(role, normalStateAtStart);
+      if (stateUpgrade) details.push(stateUpgrade);
+
+      let queued = false;
+      if (role === "replay") {
+        const perReplayPercent = (7.3 / DIRECT_AT_DENOM[state.setting]) * 100;
+        if (chance(perReplayPercent)) {
+          queueNormalOutcome("AT直撃", "リプレイ", immediateOutcome);
+          queued = true;
+        }
+      }
+
+      if (!queued) {
+        const hitRate = rareRoleHitRate(role, normalStateAtStart);
+        if (hitRate > 0 && chance(hitRate)) {
+          const target = chooseNormalOutcome();
+          queueNormalOutcome(target, `${label}／${normalStateAtStart}`, immediateOutcome);
+          queued = true;
+        }
+      }
+
+      const ceiling = MODE_CEILINGS[state.normalMode] ?? 600;
+      if (!queued && state.lcdCounter >= ceiling) {
+        queueNormalOutcome(chooseNormalOutcome(), `${state.normalMode}天井 ${ceiling}G`, immediateOutcome);
+        queued = true;
+      }
+
+      if (!queued) {
+        const zones = MODE_ZONES[state.normalMode] ?? [];
+        if (zones.includes(state.lcdCounter)) {
+          details.push(`${state.normalMode}のゾーン到達（中間当選率未投入）`);
+        }
+        const note = details.length ? details.join("／") : "追加処理なし";
+        els.phaseDetail.textContent =
+          `成立役：${label}\n状態：${state.normalState}${state.normalStateGames ? ` 残り${state.normalStateGames}G` : ""}\n${note}`;
+        els.normalAutoStatus.innerHTML =
+          `<strong>${label}</strong><br>${note}<br>実G ${state.realGames}／液晶 ${state.lcdCounter}`;
+        log(`通常AUTO：${label}／${note}／液晶${state.lcdCounter}G`);
+        render();
+      }
+    }
+
+    function runNormalGameImmediate() {
+      if (state.phase !== "normal" || state.pendingNormalRole) return;
+      state.setting = Number.parseInt(els.settingSelect.value, 10) || 1;
+      state.normalMode = els.normalModeSelect.value;
+      const role = drawNormalRole();
+      setReelSymbols(normalRoleMatrix(role));
+      resolveNormalGame(role, true);
+    }
+
+    function normalOneGame() {
+      runNormalGameImmediate();
+    }
+
+    const CZ_EXPECTATION = {
+      "REMINISCENCE": 0.52,
+      "大喰いの利世": 0.75
+    };
+
+    function drawCzDisplayRole() {
+      const roll = Math.random();
+      if (roll < 0.035) return "強チェリー";
+      if (roll < 0.085) return "チャンス目";
+      if (roll < 0.15) return "弱チェリー";
+      if (roll < 0.23) return "スイカ";
+      if (roll < 0.46) return "リプレイ";
+      if (roll < 0.72) return "押し順ベル";
+      return "ハズレ";
+    }
+
+    function finishCzFailure() {
+      const failedType = state.czType;
+      state.czResolved = true;
+      state.shokuHint = "CZ失敗による蓄積の可能性";
+      state.czType = null;
+      state.czRemaining = null;
+      state.czCurrentGame = 0;
+      state.czAutoSuccess = null;
+      state.czRevealGame = null;
+      setPhase(
+        "normal",
+        `${failedType}失敗。\n通常時へ戻りました。喰ポイントは内部蓄積の可能性がありますが、数値では表示しません。`
+      );
+      log(`${failedType}失敗 → 通常時`);
+    }
+
+    function enterCz(type) {
+      state.czType = type;
+      state.czRemaining = 8;
+      state.czCurrentGame = 0;
+      state.czResolved = false;
+      state.czLastRole = "—";
+
+      const expectation = CZ_EXPECTATION[type] ?? 0;
+      state.czAutoSuccess = Math.random() < expectation;
+      state.czRevealGame = state.czAutoSuccess
+        ? Math.floor(Math.random() * 8) + 1
+        : null;
+
+      const phase = type === "REMINISCENCE" ? "reminiscence" : "rize";
+      setPhase(
+        phase,
+        `${type}：8G。\n公開総合期待度${Math.round(expectation * 100)}%を基準に当否を保持して自動進行します。\n成立役別の正確な内部当選率は未公開のため、役表示は演出確認用です。`
+      );
+      log(`${type}へ移行（8G／期待度基準AUTO）`);
+    }
+
+    function czOneGame() {
+      if (!["reminiscence", "rize"].includes(state.phase)) {
+        log("CZ中ではありません。");
+        return;
+      }
+      if (state.czResolved || state.czRemaining <= 0) {
+        return;
+      }
+
+      consumeCommonGame();
+      state.czCurrentGame += 1;
+      state.czRemaining -= 1;
+      state.czLastRole = drawCzDisplayRole();
+
+      const roleKey =
+        state.czLastRole === "強チェリー" ? "strongCherry" :
+        state.czLastRole === "弱チェリー" ? "weakCherry" :
+        state.czLastRole === "スイカ" ? "watermelon" :
+        state.czLastRole === "チャンス目" ? "chance" :
+        state.czLastRole === "リプレイ" ? "replay" :
+        state.czLastRole === "押し順ベル" ? "bell" : "miss";
+
+      if (typeof normalRoleMatrix === "function") {
+        setReelSymbols(normalRoleMatrix(roleKey));
+      }
+
+      const triggerText = state.czType === "REMINISCENCE"
+        ? "レバー〜第3停止のフリーズを確認"
+        : "レバーONのフリーズを確認";
+
+      els.phaseDetail.textContent =
+        `${state.czType} ${state.czCurrentGame}/8G\n成立役：${state.czLastRole}\n${triggerText}\n残り${state.czRemaining}G`;
+
+      log(`${state.czType} ${state.czCurrentGame}G目：${state.czLastRole}`);
+
+      if (state.czAutoSuccess && state.czCurrentGame >= state.czRevealGame) {
+        const successType = state.czType;
+        state.czResolved = true;
+        log(`${successType}成功：フリーズ発生 → AT`);
+        beginAtSelection(`${successType}成功`);
+        return;
+      }
+
+      if (state.czRemaining <= 0) {
+        finishCzFailure();
+        return;
+      }
+
+      render();
+    }
+
+    function beginAtSelection(source, preserveAtRemaining = false) {
+      state.czType = null;
+      state.czRemaining = null;
+      if (!preserveAtRemaining || state.atRemaining === null) {
+        state.atRemaining = 150;
+      }
+      state.atStage = "内部項目・対戦相手決定";
+      state.atOpponent = null;
+      state.atLevel = "未抽選";
+      state.nextBattleGame = "抽選値未投入";
+      state.atMainGames = 0;
+      state.battleCountdown = null;
+      state.arimaJudgementRight = false;
+      state.introRemaining = null;
+
+      document.querySelectorAll("[data-opponent], [data-at-level]").forEach(button => {
+        button.classList.remove("selected-btn");
+      });
+      document.getElementById("battleGameInput").value = "";
+
+      setPhase(
+        "atOpponent",
+        `AT当選契機：${source}\nAT突入時のレバーで、対戦相手・有馬出現・次回対決G数を抽選。\nATレベルはキャラ選択時に抽選。公開されていない振り分けは手動入力で確認します。`
+      );
+      log(`AT突入レバーON（${source}）：内部項目・対戦相手決定待ち`);
+    }
+
+    function selectAtOpponent(opponent, button) {
+      if (state.phase !== "atOpponent") {
+        log("AT内部項目・対戦相手決定フェーズではありません。");
+        return;
+      }
+
+      state.atOpponent = opponent;
+      document.querySelectorAll("[data-opponent]").forEach(item => {
+        item.classList.toggle("selected-btn", item === button);
+      });
+
+      els.phaseDetail.textContent =
+        `対戦相手：${opponent}\n続けてATレベルと次回対決までのG数を手動選択してください。`;
+      log(`対戦相手を手動選択：${opponent}`);
+      render();
+    }
+
+    function selectAtLevel(level, button) {
+      if (state.phase !== "atOpponent") {
+        log("AT内部項目・対戦相手決定フェーズではありません。");
+        return;
+      }
+
+      state.atLevel = level;
+      document.querySelectorAll("[data-at-level]").forEach(item => {
+        item.classList.toggle("selected-btn", item === button);
+      });
+
+      log(`ATレベルを手動選択：レベル${level}`);
+      render();
+    }
+
+    function readPositiveGameInput(id) {
+      const value = Number.parseInt(document.getElementById(id).value, 10);
+      if (!Number.isInteger(value) || value < 1 || value > 999) {
+        return null;
+      }
+      return value;
+    }
+
+    function confirmAtSetup() {
+      if (state.phase !== "atOpponent") {
+        log("AT内部項目・対戦相手決定フェーズではありません。");
+        return;
+      }
+
+      const game = readPositiveGameInput("battleGameInput");
+
+      if (!state.atOpponent) {
+        log("対戦相手を選択してください。");
+        return;
+      }
+
+      if (!["A", "B", "C", "D"].includes(state.atLevel)) {
+        log("ATレベルを選択してください。");
+        return;
+      }
+
+      if (game === null) {
+        log("次回喰種対決までのG数を1〜999で入力してください。");
+        return;
+      }
+
+      state.nextBattleGame = `${game}G`;
+      state.battleCountdown = game;
+      state.atStage = "導入EP";
+      state.introRemaining = 10;
+
+      let constraintNote = "";
+      if (state.atOpponent.startsWith("特等") && !["C", "D"].includes(state.atLevel)) {
+        constraintNote = "\n※公開情報では特等らはレベルC以上濃厚。選択内容を再確認してください。";
+      }
+      if (state.atOpponent === "亜門鋼太朗" && state.atLevel !== "D") {
+        constraintNote = "\n※公開情報では亜門はレベルD濃厚。選択内容を再確認してください。";
+      }
+
+      setPhase(
+        "atIntro",
+        `対戦相手：${state.atOpponent}\nATレベル：${state.atLevel}\n次回対決まで：${game}G\n対戦相手決定後、約10Gの導入エピソードを開始。${constraintNote}`
+      );
+      log(`AT設定確定：${state.atOpponent}／レベル${state.atLevel}／次回対決${game}G → 導入EP`);
+    }
+
+    function startAtMain(reason) {
+      state.introRemaining = null;
+      state.atStage = "AT本編";
+      setPhase(
+        "atMain",
+        `${reason}\n対戦相手：${state.atOpponent}\nATレベル：${state.atLevel}\n次回喰種対決まで残り${state.battleCountdown}G。\n差枚消費・レア役抽選は未実装。`
+      );
+      log(`AT本編へ移行：対決まで残り${state.battleCountdown}G`);
+    }
+
+    function atIntroOneGame() {
+      if (state.phase !== "atIntro") {
+        log("AT導入エピソード中ではありません。");
+        return;
+      }
+
+      if (state.introRemaining <= 0) {
+        startAtMain("導入エピソード終了。");
+        return;
+      }
+
+      consumeCommonGame();
+      state.introRemaining -= 1;
+      els.phaseDetail.textContent =
+        `対戦相手：${state.atOpponent}\nAT導入エピソードを1G進行。残り${state.introRemaining}G。`;
+      log(`AT導入EP：残り${state.introRemaining}G`);
+
+      if (state.introRemaining === 0) {
+        startAtMain("導入エピソードを約10G消化。");
+        return;
+      }
+
+      render();
+    }
+
+    function atMainOneGame() {
+      if (state.phase !== "atMain") {
+        log("AT本編中ではありません。");
+        return;
+      }
+
+      if (state.battleCountdown === null) {
+        log("次回喰種対決までのG数が未設定です。");
+        return;
+      }
+
+      consumeCommonGame();
+      state.atMainGames += 1;
+      state.battleCountdown = Math.max(0, state.battleCountdown - 1);
+
+      if (state.battleCountdown === 0) {
+        state.atStage = "喰種対決前兆";
+        setPhase(
+          "battlePrelude",
+          `規定のATゲーム数に到達。\n対戦相手：${state.atOpponent}\n喰種対決前兆へ移行。前兆ゲーム数は未投入のため、手動で対決へ進めます。`
+        );
+        log("次回対決まで0G：喰種対決前兆へ");
+        return;
+      }
+
+      els.phaseDetail.textContent =
+        `AT本編を1G進行。\n対戦相手：${state.atOpponent}\n次回喰種対決まで残り${state.battleCountdown}G。`;
+      log(`AT本編1G：対決まで残り${state.battleCountdown}G`);
+      render();
+    }
+
+    function enterBattle() {
+      if (state.phase !== "battlePrelude") {
+        log("喰種対決前兆中ではありません。");
+        return;
+      }
+
+      state.battleRemaining = 4;
+      state.atStage = "喰種対決";
+      setPhase(
+        "battle",
+        `喰種対決：対戦相手は${state.atOpponent ?? "未選択"}、4G。\nリプレイ・共通ベルはチャンス、レア役は大チャンス。勝敗抽選値は未実装。`
+      );
+      log("喰種対決へ移行（残り4G）");
+    }
+
+    function battleOneGame(role) {
+      if (state.phase !== "battle") {
+        log("喰種対決中ではありません。");
+        return;
+      }
+
+      if (state.battleRemaining <= 0) {
+        log("喰種対決残り0G。勝利または敗北を選択してください。");
+        return;
+      }
+
+      consumeCommonGame();
+      state.battleRemaining -= 1;
+
+      let roleNote = "公開済みの勝利率は未投入。";
+      if (role === "リプレイ" || role === "共通ベル") {
+        roleNote = "チャンス役。勝敗抽選値は未投入。";
+      } else if (role === "レア役") {
+        roleNote = "大チャンス役。勝敗抽選値は未投入。";
+      }
+
+      els.phaseDetail.textContent =
+        `対戦相手：${state.atOpponent ?? "未選択"}\n成立役：${role}\n${roleNote}\n喰種対決残り${state.battleRemaining}G。`;
+      log(`喰種対決：${role}／残り${state.battleRemaining}G`);
+      render();
+    }
+
+    function enterBattleReentry() {
+      state.battleRemaining = null;
+      state.battleCountdown = null;
+      state.nextBattleGame = "敗北後レバー待ち";
+      state.atStage = "敗北後レバー待ち";
+      document.getElementById("reentryBattleInput").value = "";
+
+      setPhase(
+        "battleReentry",
+        `喰種対決敗北。\n次遊技のレバーONで、ゲーム数による次回喰種対決抽選を行う。\n振り分け未投入のため、次回G数を入力してください。`
+      );
+      log("喰種対決敗北：次遊技レバー待ち");
+    }
+
+    function battleReentryLever() {
+      if (state.phase !== "battleReentry") {
+        log("対決敗北後のレバー待ちではありません。");
+        return;
+      }
+
+      const game = readPositiveGameInput("reentryBattleInput");
+      if (game === null) {
+        log("次回喰種対決までのG数を1〜999で入力してください。");
+        return;
+      }
+
+      state.nextBattleGame = `${game}G`;
+      state.battleCountdown = game;
+      state.atStage = "AT本編";
+      setPhase(
+        "atMain",
+        `対決敗北後の次遊技レバーON。\n次回喰種対決まで：${game}G。\n対戦相手：${state.atOpponent}／ATレベル：${state.atLevel}`
+      );
+      log(`敗北後レバー：次回対決${game}G → AT本編`);
+    }
+
+    const BITES_TABLES = {
+      A: [50, 100, 200, 300, 500],
+      B: [50, 50, 500, 500, 1000],
+      C: [100, 200, 300, 500, 1000],
+      D: [100, 100, 500, 1000, 2000],
+      E: [200, 300, 500, 1000, 2000],
+      "超": [300, 500, 1000, 2000, 3000],
+      "極": [2000]
+    };
+
+    function currentBitesTable() {
+      return state.bitesTable ? BITES_TABLES[state.bitesTable] : null;
+    }
+
+    function renderBitesTrack() {
+      if (!els.rewardTrack || !els.bitesSummary) {
+        return;
+      }
+
+      const table = currentBitesTable();
+      els.rewardTrack.textContent = "";
+
+      if (!table) {
+        els.bitesSummary.textContent = "喰種対決に勝利すると、ここで報酬テーブルを決定します。";
+        return;
+      }
+
+      table.forEach((reward, index) => {
+        const step = document.createElement("div");
+        step.className = "reward-step";
+        if (state.bitesLevel !== null && index === state.bitesLevel) {
+          step.classList.add("current");
+        } else if (state.bitesLevel !== null && index < state.bitesLevel) {
+          step.classList.add("past");
+        }
+        step.textContent = `${index + 1}段目\n${reward}枚`;
+        els.rewardTrack.appendChild(step);
+      });
+
+      els.bitesSummary.textContent =
+        `選択テーブル：${state.bitesTable}／現在報酬：${state.bitesReward ?? table[0]}枚`;
+    }
+
+    function enterBites() {
+      state.battleRemaining = null;
+      state.atStage = "BITES報酬テーブル決定";
+      state.bitesTable = null;
+      state.bitesLevel = null;
+      state.bitesReward = null;
+      state.bitesRetryState = null;
+      document.querySelectorAll("[data-bites-table]").forEach(button => {
+        button.classList.remove("selected-btn");
+      });
+      setPhase(
+        "bitesSetup",
+        "喰種対決勝利。BITES報酬テーブルを決定。\nテーブルはA〜E・超・極の7種類。今回は抽選結果を手動で選択します。"
+      );
+      log("喰種対決勝利：BITES報酬テーブル決定へ");
+    }
+
+    function selectBitesTable(tableName, button) {
+      if (!["bitesSetup", "bitesIntro"].includes(state.phase)) {
+        log("BITES報酬テーブル決定フェーズではありません。");
+        return;
+      }
+
+      state.bitesTable = tableName;
+      state.bitesLevel = 0;
+      state.bitesReward = BITES_TABLES[tableName][0];
+      document.querySelectorAll("[data-bites-table]").forEach(item => {
+        item.classList.toggle("selected-btn", item === button);
+      });
+      log(`BITES報酬テーブルを選択：${tableName}`);
+      render();
+    }
+
+    function confirmBitesTable() {
+      if (state.phase !== "bitesSetup") {
+        log("BITES報酬テーブル決定フェーズではありません。");
+        return;
+      }
+      if (!state.bitesTable) {
+        log("BITES報酬テーブルを選択してください。");
+        return;
+      }
+
+      state.atStage = "BITES導入1G";
+      setPhase(
+        "bitesIntro",
+        `BITES導入1G。\n現在テーブル：${state.bitesTable}／初期報酬${state.bitesReward}枚。\nレア役時はテーブル昇格抽選。昇格先の詳細は未統合。`
+      );
+      log(`BITES導入1Gへ：テーブル${state.bitesTable}`);
+    }
+
+    function startBitesMain() {
+      if (state.phase !== "bitesIntro") {
+        log("BITES導入1Gではありません。");
+        return;
+      }
+      consumeCommonGame();
+      state.atStage = "BITES";
+      state.bitesRetryState = "継続中";
+      setPhase(
+        "bites",
+        `BITES開始。左押し推奨。\nリプレイ・ベルは1UP、弱レア役は1〜2UP、強レア役は2UP、確定チェリーはMAX。\n現在報酬：${state.bitesReward}枚。`
+      );
+      log(`BITES開始：テーブル${state.bitesTable}／初期${state.bitesReward}枚`);
+    }
+
+    function bitesUpgrade(steps, roleName) {
+      if (state.phase !== "bites") {
+        log("BITES本編中ではありません。");
+        return;
+      }
+
+      const table = currentBitesTable();
+      if (!table) {
+        log("BITES報酬テーブルが未選択です。");
+        return;
+      }
+
+      consumeCommonGame();
+      const oldLevel = state.bitesLevel;
+      state.bitesLevel = Math.min(table.length - 1, state.bitesLevel + steps);
+      state.bitesReward = table[state.bitesLevel];
+      const moved = state.bitesLevel - oldLevel;
+
+      els.phaseDetail.textContent =
+        `${roleName}成立：${moved > 0 ? `${moved}段階UP` : "MAX維持"}。\n現在報酬：${state.bitesReward}枚。`;
+      log(`BITES：${roleName}／${moved > 0 ? `${moved}UP` : "MAX維持"}／${state.bitesReward}枚`);
+      render();
+    }
+
+    function bitesToMax() {
+      if (state.phase !== "bites") {
+        log("BITES本編中ではありません。");
+        return;
+      }
+      const table = currentBitesTable();
+      if (!table) {
+        return;
+      }
+      consumeCommonGame();
+      state.bitesLevel = table.length - 1;
+      state.bitesReward = table[state.bitesLevel];
+      els.phaseDetail.textContent =
+        `確定チェリー成立：MAX報酬。\n現在報酬：${state.bitesReward}枚。`;
+      log(`BITES：確定チェリー／MAX ${state.bitesReward}枚`);
+      render();
+    }
+
+    function bitesMiss() {
+      if (state.phase !== "bites") {
+        log("BITES本編中ではありません。");
+        return;
+      }
+      consumeCommonGame();
+      state.bitesRetryState = "RETRY判定待ち";
+      state.atStage = "BITES RETRY判定";
+      setPhase(
+        "bitesRetry",
+        `ハズレ成立。現在報酬は${state.bitesReward}枚。\nMAX BET後のRETRY抽選は一律20%。`
+      );
+      log(`BITES：ハズレ／${state.bitesReward}枚でRETRY判定へ`);
+    }
+
+    function resolveBitesRetry(forceResult = null) {
+      if (state.phase !== "bitesRetry") {
+        log("BITES RETRY判定中ではありません。");
+        return;
+      }
+
+      const success = forceResult === null ? Math.random() < 0.20 : forceResult;
+      if (success) {
+        state.bitesRetryState = "RETRY当選";
+        state.atStage = "BITES";
+        setPhase(
+          "bites",
+          `RETRY当選。報酬${state.bitesReward}枚を維持してBITES再開。`
+        );
+        log("BITES RETRY当選：再チャレンジ");
+        return;
+      }
+
+      finishBites();
+    }
+
+    function finishBites() {
+      if (state.phase !== "bitesRetry") {
+        log("BITES終了判定中ではありません。");
+        return;
+      }
+
+      const reward = state.bitesReward ?? 0;
+      state.atRemaining = (state.atRemaining ?? 0) + reward;
+      state.bitesRetryState = "RETRY非当選・終了";
+      state.atStage = "BITES報酬獲得";
+      setPhase(
+        "bitesResult",
+        `BITES終了：${reward}枚をAT差枚へ加算。\nAT残り差枚：約${state.atRemaining}枚。\n次セットはAT突入レバーで対戦相手を決定し、その後約10Gの導入EPへ。`
+      );
+      log(`BITES終了：+${reward}枚／AT残り約${state.atRemaining}枚`);
+    }
+
+    function nextAtCycleLever() {
+      if (state.phase !== "bitesResult") {
+        log("BITES報酬獲得後ではありません。");
+        return;
+      }
+      beginAtSelection("BITES終了後・次セット", true);
+      log("次セットAT突入レバーON：対戦相手決定へ");
+    }
+
+    function resetAll() {
+      if (state.spinTimer !== null) {
+        clearInterval(state.spinTimer);
+      }
+      if (state.normalSpinTimer !== null) {
+        clearInterval(state.normalSpinTimer);
+      }
+      Object.assign(state, {
+        phase: "normal",
+        realGames: 0,
+        lcdCounter: 0,
+        normalState: "通常",
+        normalMode: els.normalModeSelect.value,
+        kakuganGames: 0,
+        czType: null,
+        czRemaining: null,
+        czCurrentGame: 0,
+        czAutoSuccess: null,
+        czRevealGame: null,
+        czLastRole: "—",
+        czResolved: false,
+        atRemaining: null,
+        atStage: null,
+        atOpponent: null,
+        atLevel: "未抽選",
+        nextBattleGame: "抽選値未投入",
+        atMainGames: 0,
+        battleCountdown: null,
+        arimaJudgementRight: false,
+        introRemaining: null,
+        battleRemaining: null,
+        bitesTable: null,
+        bitesLevel: null,
+        bitesReward: null,
+        bitesRetryState: null,
+        shokuHint: "示唆なし",
+        spinTimer: null,
+        spinTicks: 0,
+        setting: Number.parseInt(els.settingSelect.value, 10) || 1,
+        normalStateGames: 0,
+        normalStateReturn: "通常",
+        pendingNormalRole: null,
+        normalReelStopped: [true, true, true],
+        normalSpinTimer: null,
+        normalSpinTicks: 0,
+        autoStop: Boolean(els.autoStopToggle.checked),
+        lastNormalRole: "—",
+        normalAutoGames: 0,
+        normalRareCount: 0,
+        normalHitCount: 0,
+        autoPreludeTarget: null,
+        autoPreludeSource: null
+      });
+      els.phaseDetail.textContent =
+        "通常時AUTO待機中。\nLEVER ONで公開済み小役抽選を開始します。";
+      showBaseStop();
+      els.normalAutoStatus.innerHTML = "<strong>待機中</strong><br>LEVER ONを押してください。";
+      els.log.textContent = "";
+      log("全状態をリセット");
+      render();
+    }
+
+    const reelEls = [
+      document.getElementById("reel0"),
+      document.getElementById("reel1"),
+      document.getElementById("reel2")
+    ];
+
+    const symbolHtml = {
+      blank: '<span class="sym blank">未確定</span>',
+      bar: '<span class="sym bar">BAR</span>',
+      watermelon: '<span class="sym watermelon">スイカ</span>',
+      replay: '<span class="sym replay">REPLAY</span>',
+      cherry: '<span class="sym cherry">CHERRY</span>',
+      bell: '<span class="sym bell">BELL</span>',
+      chance: '<span class="sym chance">CHANCE</span>',
+      kaku: '<span class="sym kaku">赫</span>',
+      eat: '<span class="sym eat">喰</span>'
+    };
+
+    function clearReelHighlights() {
+      reelEls.forEach(reel => {
+        reel.querySelectorAll(".cell").forEach(cell => {
+          cell.classList.remove("diag");
+        });
+      });
+    }
+
+    function setReelSymbols(matrix) {
+      clearReelHighlights();
+      reelEls.forEach((reel, reelIndex) => {
+        const cells = reel.querySelectorAll(".cell");
+        cells.forEach((cell, rowIndex) => {
+          cell.innerHTML = symbolHtml[matrix[reelIndex][rowIndex]];
+        });
+      });
+    }
+
+    function showBaseStop() {
+      setReelSymbols([
+        ["blank", "blank", "bar"],
+        ["blank", "blank", "blank"],
+        ["blank", "blank", "blank"]
+      ]);
+      log("停止形表示：通常時の基準＝左下段BAR");
+    }
+
+    function showWatermelon() {
+      setReelSymbols([
+        ["watermelon", "blank", "blank"],
+        ["blank", "watermelon", "blank"],
+        ["blank", "blank", "watermelon"]
+      ]);
+      reelEls[0].querySelector('[data-row="0"]').classList.add("diag");
+      reelEls[1].querySelector('[data-row="1"]').classList.add("diag");
+      reelEls[2].querySelector('[data-row="2"]').classList.add("diag");
+      log("停止形表示：スイカ右下がり");
+    }
+
+    function showKakuganReplay() {
+      setReelSymbols([
+        ["blank", "blank", "replay"],
+        ["blank", "blank", "replay"],
+        ["blank", "blank", "replay"]
+      ]);
+      reelEls.forEach(reel => {
+        reel.querySelector('[data-row="2"]').classList.add("diag");
+      });
+      log("停止形表示：下段リプレイ＝赫眼リプレイ");
+    }
+
+    function spinDirectionTest() {
+      if (state.spinTimer !== null) {
+        return;
+      }
+
+      const cycle = ["bar", "replay", "bell", "cherry", "watermelon", "kaku", "eat"];
+      reelEls.forEach(reel => reel.classList.add("spinning"));
+      state.spinTicks = 0;
+
+      state.spinTimer = setInterval(() => {
+        state.spinTicks += 1;
+
+        reelEls.forEach((reel, reelIndex) => {
+          const cells = Array.from(reel.querySelectorAll(".cell"));
+          const previous = cells.map(cell => cell.innerHTML);
+
+          // 画面上の図柄を上→中→下へ送る（下方向の流れ）。
+          cells[2].innerHTML = previous[1];
+          cells[1].innerHTML = previous[0];
+          const nextKey = cycle[(state.spinTicks + reelIndex * 2) % cycle.length];
+          cells[0].innerHTML = symbolHtml[nextKey];
+        });
+
+        if (state.spinTicks >= 16) {
+          clearInterval(state.spinTimer);
+          state.spinTimer = null;
+          reelEls.forEach(reel => reel.classList.remove("spinning"));
+          showBaseStop();
+          log("回転方向テスト終了：図柄は上から下へ流れる");
+        }
+      }, 85);
+
+      log("回転方向テスト開始");
+    }
+
+    els.normalLever.addEventListener("click", () => normalLever(false));
+    els.normalStopButtons.forEach((button, index) => {
+      button.addEventListener("click", () => stopNormalReel(index));
+    });
+    els.settingSelect.addEventListener("change", () => {
+      state.setting = Number.parseInt(els.settingSelect.value, 10) || 1;
+      log(`設定を${state.setting}へ変更`);
+      render();
+    });
+    els.normalModeSelect.addEventListener("change", () => {
+      state.normalMode = els.normalModeSelect.value;
+      log(`通常時モードを${state.normalMode}へ変更`);
+      render();
+    });
+    els.autoStopToggle.addEventListener("change", () => {
+      state.autoStop = Boolean(els.autoStopToggle.checked);
+      render();
+    });
+
+    document.getElementById("smartAdvanceButton").addEventListener("click", smartAdvance);
+    document.getElementById("fastForwardButton").addEventListener("click", fastForwardCurrentPhase);
+    document.getElementById("battleGameInput").addEventListener("input", renderQuickControls);
+    document.getElementById("reentryBattleInput").addEventListener("input", renderQuickControls);
+
+    document.getElementById("normalGame").addEventListener("click", normalOneGame);
+
+    document.getElementById("enterPrelude").addEventListener("click", () => {
+      setPhase(
+        "prelude",
+        "前兆へ移行。\n東京上空などの演出選択・本前兆判定は未実装。"
+      );
+      log("前兆へ移行");
+    });
+
+    document.getElementById("addLcd10").addEventListener("click", () => {
+      state.lcdCounter += 10;
+      log("デバッグ操作：液晶カウンタ+10");
+      render();
+    });
+
+    document.getElementById("addLcd100").addEventListener("click", () => {
+      state.lcdCounter += 100;
+      log("デバッグ操作：液晶カウンタ+100");
+      render();
+    });
+
+    document.getElementById("stateCycle").addEventListener("click", () => {
+      const states = ["通常", "高確", "超高確"];
+      const current = states.indexOf(state.normalState);
+      state.normalState = states[(current + 1) % states.length];
+      if (state.normalState === "高確") state.normalStateGames = readHighHoldGames();
+      else if (state.normalState === "超高確") state.normalStateGames = rollSuperHighGames();
+      else state.normalStateGames = 0;
+      log(`通常時状態を手動切替：${state.normalState}`);
+      render();
+    });
+
+    document.getElementById("kakuganOn").addEventListener("click", () => {
+      state.kakuganGames += rollKakuganGames();
+      log(`赫眼状態を手動開始：残り${state.kakuganGames}G`);
+      render();
+    });
+
+    document.getElementById("enterReminiscence").addEventListener("click", () => {
+      enterCz("REMINISCENCE");
+    });
+
+    document.getElementById("enterRize").addEventListener("click", () => {
+      enterCz("大喰いの利世");
+    });
+
+    document.getElementById("czGame").addEventListener("click", czOneGame);
+
+    document.getElementById("czSuccess").addEventListener("click", () => {
+      if (!["reminiscence", "rize"].includes(state.phase)) {
+        log("CZ中ではありません。");
+        return;
+      }
+      beginAtSelection(`${state.czType}成功`);
+    });
+
+    document.getElementById("czFail").addEventListener("click", () => {
+      if (!["reminiscence", "rize"].includes(state.phase)) {
+        log("CZ中ではありません。");
+        return;
+      }
+      finishCzFailure();
+    });
+
+    document.getElementById("enterEpisode").addEventListener("click", () => {
+      setPhase(
+        "episode",
+        "EP BONUS：約100枚獲得。\n消化中はレア役でAT差枚数上乗せ抽選。終了後はATへ。"
+      );
+      log("EP BONUSへ移行");
+    });
+
+    document.getElementById("episodeFinish").addEventListener("click", () => {
+      if (state.phase !== "episode") {
+        log("EP BONUS中ではありません。");
+        return;
+      }
+      beginAtSelection("EP BONUS終了");
+    });
+
+    document.getElementById("enterAt").addEventListener("click", () => {
+      beginAtSelection("デバッグ直接開始");
+    });
+
+    document.querySelectorAll("[data-opponent]").forEach(button => {
+      button.addEventListener("click", () => {
+        selectAtOpponent(button.dataset.opponent, button);
+      });
+    });
+
+    document.querySelectorAll("[data-at-level]").forEach(button => {
+      button.addEventListener("click", () => {
+        selectAtLevel(button.dataset.atLevel, button);
+      });
+    });
+
+    document.getElementById("confirmAtSetup").addEventListener("click", confirmAtSetup);
+    document.getElementById("atIntroGame").addEventListener("click", atIntroOneGame);
+
+    document.getElementById("enterAtMain").addEventListener("click", () => {
+      if (state.phase !== "atIntro") {
+        log("AT導入エピソード中ではありません。");
+        return;
+      }
+      startAtMain("デバッグ操作で導入EPを終了。");
+    });
+
+    document.getElementById("atMainGame").addEventListener("click", atMainOneGame);
+    document.getElementById("enterBattle").addEventListener("click", enterBattle);
+
+    document.querySelectorAll("[data-battle-role]").forEach(button => {
+      button.addEventListener("click", () => {
+        battleOneGame(button.dataset.battleRole);
+      });
+    });
+
+    document.getElementById("battleReentryLever").addEventListener("click", battleReentryLever);
+
+    document.getElementById("battleWin").addEventListener("click", () => {
+      if (state.phase !== "battle") {
+        log("喰種対決中ではありません。");
+        return;
+      }
+      if (state.atOpponent === "有馬貴将") {
+        state.arimaJudgementRight = true;
+        log("有馬戦勝利：AT終了時の有馬貴将ジャッジメント権利を獲得");
+      }
+      enterBites();
+    });
+
+    document.getElementById("battleLose").addEventListener("click", () => {
+      if (state.phase !== "battle") {
+        log("喰種対決中ではありません。");
+        return;
+      }
+      enterBattleReentry();
+    });
+
+    document.querySelectorAll("[data-bites-table]").forEach(button => {
+      button.addEventListener("click", () => {
+        selectBitesTable(button.dataset.bitesTable, button);
+      });
+    });
+
+    document.getElementById("confirmBitesTable").addEventListener("click", confirmBitesTable);
+    document.getElementById("bitesIntroFinish").addEventListener("click", startBitesMain);
+    document.getElementById("bitesOneUp").addEventListener("click", () => {
+      bitesUpgrade(1, "リプレイ／ベル");
+    });
+    document.getElementById("bitesWeakOneUp").addEventListener("click", () => {
+      bitesUpgrade(1, "弱レア役");
+    });
+    document.getElementById("bitesWeakTwoUp").addEventListener("click", () => {
+      bitesUpgrade(2, "弱レア役");
+    });
+    document.getElementById("bitesTwoUp").addEventListener("click", () => {
+      bitesUpgrade(2, "強レア役");
+    });
+    document.getElementById("bitesMax").addEventListener("click", bitesToMax);
+    document.getElementById("bitesMiss").addEventListener("click", bitesMiss);
+    document.getElementById("bitesRetryLottery").addEventListener("click", () => {
+      resolveBitesRetry(null);
+    });
+    document.getElementById("bitesRetryForce").addEventListener("click", () => {
+      resolveBitesRetry(true);
+    });
+    document.getElementById("bitesEndForce").addEventListener("click", () => {
+      resolveBitesRetry(false);
+    });
+    document.getElementById("nextAtCycleLever").addEventListener("click", nextAtCycleLever);
+
+    document.getElementById("enterMukade").addEventListener("click", () => {
+      state.atStage = "百足覚醒";
+      setPhase(
+        "mukade",
+        "百足覚醒：5G+αの差枚数上乗せ特化ゾーン。\n上乗せ抽選値・ループ処理は未実装。"
+      );
+      log("百足覚醒へ移行");
+    });
+
+    document.getElementById("enterOwl").addEventListener("click", () => {
+      state.atStage = "隻眼の梟";
+      setPhase(
+        "owl",
+        "隻眼の梟：1G完結の差枚数上乗せ特化ゾーン。\n上乗せ振り分けは未実装。"
+      );
+      log("隻眼の梟へ移行");
+    });
+
+    document.getElementById("enterCcg").addEventListener("click", () => {
+      state.atStage = "CCGの死神";
+      setPhase(
+        "ccg",
+        "CCGの死神：1G完結のAT初期枚数決定特化ゾーン。\n上乗せ振り分けは未実装。"
+      );
+      log("CCGの死神へ移行");
+    });
+
+    document.getElementById("resetAll").addEventListener("click", resetAll);
+    document.getElementById("showBaseStop").addEventListener("click", showBaseStop);
+    document.getElementById("showWatermelon").addEventListener("click", showWatermelon);
+    document.getElementById("showKakuganReplay").addEventListener("click", showKakuganReplay);
+    document.getElementById("spinDirectionTest").addEventListener("click", spinDirectionTest);
+
+    state.setting = Number.parseInt(els.settingSelect.value, 10) || 1;
+    state.normalMode = els.normalModeSelect.value;
+    log("再構築土台 Ver.0.7 通常時AUTO試作版 起動");
+    render();
+  </script>
+</body>
+</html>
